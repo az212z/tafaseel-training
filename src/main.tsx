@@ -8,6 +8,7 @@ import '@fontsource/ibm-plex-sans-arabic/arabic-600.css'
 import App from './App'
 import './styles.css'
 import './portal.css'
+import './catalog.css'
 
 // Recover once when a long-lived tab references a chunk replaced by a deployment.
 window.addEventListener('vite:preloadError', (event) => {

@@ -2,7 +2,7 @@ import { Component, lazy, Suspense, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
 import { Link, Route, Routes, useLocation } from 'react-router-dom'
 import { ArrowLeft, CheckCircle, X } from '@phosphor-icons/react'
-import { Header, Footer } from './components/Shared'
+import { Header, Footer, FloatingWhatsApp } from './components/Shared'
 import LearningProvider from './services/LearningProvider'
 import AuthProvider from './auth/AuthProvider'
 import RequireAuth from './auth/RequireAuth'
@@ -46,7 +46,7 @@ function RouteEffects() {
   const { pathname } = useLocation()
   useEffect(() => {
     const names: Record<string, string> = {
-      '/': 'استعدادك يبدأ بفهمك',
+      '/': 'معرفة تتسع ومهارات تتطور',
       '/programs': 'البرامج التدريبية',
       '/practice': 'التدريب التفاعلي',
       '/dashboard': 'حساب المتدرب',
@@ -127,6 +127,7 @@ function AppContent() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/programs" element={<Programs />} />
+              <Route path="/programs/category/:groupId" element={<Programs />} />
               <Route path="/programs/:id" element={<CourseDetail />} />
               <Route path="/practice" element={<Practice />} />
               <Route
@@ -179,7 +180,12 @@ function AppContent() {
             </Routes>
           </Suspense>
         </main>
-        {!portalRoute && <Footer />}
+        {!portalRoute && (
+          <>
+            <Footer />
+            <FloatingWhatsApp />
+          </>
+        )}
         <div className={`toast ${toast ? 'visible' : ''}`} role="status" aria-live="polite">
           {toast && (
             <>

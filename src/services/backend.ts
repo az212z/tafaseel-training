@@ -48,6 +48,7 @@ export function errorMessage(error: unknown): string {
   if (/MATERIAL_UNAVAILABLE/.test(text))
     return 'المرفق غير متاح في حسابك. حدّث الصفحة أو راجع الإدارة.'
   if (/COHORT_FULL/.test(text)) return 'اكتمل عدد المقاعد في هذه الدفعة. اختر دفعة أخرى.'
+  if (/BOOKING_VIA_WHATSAPP/.test(text)) return 'الحجز وتأكيده عبر واتساب المركز: ٠٥٥٨٨١٥٠٥٣.'
   if (/COHORT_MISMATCH/.test(text)) return 'الدفعة المحددة لا تتبع هذا الكورس.'
   if (/INVALID_PAYMENT_AMOUNT/.test(text))
     return 'المبلغ يجب أن يكون موجبًا وألا يتجاوز المتبقي، وبمنزلتين عشريتين كحد أقصى.'
@@ -111,6 +112,11 @@ export type CourseRecord = {
   title: string
   summary: string
   category: string
+  group_id: string
+  is_listed: boolean
+  sort_order: number
+  image_path: string
+  details: Record<string, unknown>
   level: string
   status: string
   price: number | null

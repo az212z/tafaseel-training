@@ -17,7 +17,6 @@ import { useLearning } from '../services/context'
 import { arNumber, attemptScore } from '../services/learning'
 import {
   dateLabel,
-  errorMessage,
   invoicePaid,
   invoiceStatus,
   money,
@@ -37,6 +36,7 @@ import {
   Stat,
 } from '../components/portal/PortalUI'
 import { weekPlan } from '../data/content'
+import { WhatsAppLink } from '../components/Shared'
 export default function Dashboard() {
   const { pathname } = useLocation(),
     tab = pathname.split('/')[2] || 'overview',
@@ -62,16 +62,6 @@ export default function Dashboard() {
       0,
     ),
     done = data?.lesson_progress.filter((p) => p.completed).length || 0
-  async function requestCourse(id: string) {
-    try {
-      const { error } = await supabase.rpc('request_enrollment', { p_course: id })
-      if (error) throw error
-      notify('تم إرسال طلب الالتحاق. تابع حالة القبول في كورساتك.')
-      await refresh()
-    } catch (e) {
-      notify(errorMessage(e))
-    }
-  }
   return (
     <PortalShell
       title={titles[tab][0]}
@@ -131,7 +121,7 @@ export default function Dashboard() {
                     <p>
                       {enrollments.some((e) => e.status === 'active')
                         ? 'عد إلى كورسك، وأكمل بناء فهمك خطوة بخطوة.'
-                        : 'اختر كورسًا وأرسل طلب الالتحاق. ستظهر تفاصيله هنا بعد قبول الإدارة.'}
+                        : 'اختر دورتك وأكّد الحجز عبر واتساب. ستظهر هنا بعد اعتماد تسجيلك من المركز.'}
                     </p>
                     <Link className="button" to="/dashboard/courses">
                       {enrollments.some((e) => e.status === 'active')
@@ -193,7 +183,7 @@ export default function Dashboard() {
                     ) : (
                       <Empty
                         title="رحلتك تبدأ بكورس"
-                        description="ستجد كورساتك هنا بعد إرسال طلب الالتحاق."
+                        description="ستجد دوراتك هنا بعد تأكيد حجزك واعتماد تسجيلك من المركز."
                       />
                     )}
                   </Panel>
@@ -403,13 +393,15 @@ export default function Dashboard() {
                 </Panel>
                 <Panel
                   title="اكتشف مسارك التالي"
-                  description="راجع المسار وأرسل طلب الالتحاق، ثم تعتمد الإدارة تفاصيل تسجيلك."
+                  description="راجع الدورة، ثم تواصل عبر واتساب لتأكيد الموعد والرسوم والحجز."
                 >
                   <div className="catalog-grid">
                     {data.courses
                       .filter(
                         (c) =>
-                          c.status === 'active' && !enrollments.some((e) => e.course_id === c.id),
+                          c.status === 'active' &&
+                          c.is_listed !== false &&
+                          !enrollments.some((e) => e.course_id === c.id),
                       )
                       .map((c) => (
                         <article className="catalog-card" key={c.id}>
@@ -422,13 +414,12 @@ export default function Dashboard() {
                             <span>
                               {c.price === null ? 'الرسوم تُحدد عند القبول' : money(c.price)}
                             </span>
-                            <button
+                            <WhatsAppLink
                               className="button button-outline button-small"
-                              disabled={loading}
-                              onClick={() => void requestCourse(c.id)}
+                              courseTitle={c.title}
                             >
-                              طلب الالتحاق
-                            </button>
+                              احجز عبر واتساب
+                            </WhatsAppLink>
                           </div>
                         </article>
                       ))}

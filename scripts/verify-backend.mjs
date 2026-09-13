@@ -111,6 +111,7 @@ try {
         summary: 'بيانات مؤقتة للتحقق من النظام',
         status: 'active',
         category: 'شامل',
+        is_listed: false,
       }),
     )
     cohortId = checked(
@@ -143,23 +144,35 @@ try {
         .single(),
     ).id
   })
-  await ok('Enrollment requests remain pending and do not unlock lessons', async () => {
-    checked(await learner.rpc('request_enrollment', { p_course: courseId }))
-    const e = checked(await learner.from('enrollments').select('*'))
-    assert.equal(e[0].status, 'pending')
-    await denied(await learner.from('lessons').select('*').eq('id', lessonId))
-    await denied(
-      await learner.rpc('admin_enroll', {
-        p_user: qa.learner.id,
-        p_course: courseId,
-        p_cohort: cohortId,
-        p_status: 'active',
-      }),
-    )
-    await denied(
-      await learner.from('enrollments').update({ status: 'active' }).eq('user_id', qa.learner.id),
-    )
-  })
+  await ok(
+    'Booking is WhatsApp-only; pending admin registration does not unlock lessons',
+    async () => {
+      const booking = await learner.rpc('request_enrollment', { p_course: courseId })
+      assert.match(booking.error?.message || '', /BOOKING_VIA_WHATSAPP/)
+      checked(
+        await admin.rpc('admin_enroll', {
+          p_user: qa.learner.id,
+          p_course: courseId,
+          p_cohort: null,
+          p_status: 'pending',
+        }),
+      )
+      const e = checked(await learner.from('enrollments').select('*'))
+      assert.equal(e[0].status, 'pending')
+      await denied(await learner.from('lessons').select('*').eq('id', lessonId))
+      await denied(
+        await learner.rpc('admin_enroll', {
+          p_user: qa.learner.id,
+          p_course: courseId,
+          p_cohort: cohortId,
+          p_status: 'active',
+        }),
+      )
+      await denied(
+        await learner.from('enrollments').update({ status: 'active' }).eq('user_id', qa.learner.id),
+      )
+    },
+  )
   await ok('Admin acceptance unlocks only assigned student course and cohort', async () => {
     checked(
       await admin.rpc('admin_enroll', {

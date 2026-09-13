@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import type { ReactNode } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import {
   ArrowLeft,
@@ -15,8 +16,17 @@ import {
   Sun,
   Target,
   X,
+  WhatsappLogo,
+  InstagramLogo,
+  SnapchatLogo,
+  Phone,
+  Translate,
+  Palette,
+  Briefcase,
 } from '@phosphor-icons/react'
 import { faqs } from '../data/content'
+import { courseGroups } from '../data/course-catalog'
+import { contact, whatsappUrl } from '../services/contact'
 import type { Course } from '../data/content'
 import { useAuth } from '../auth/context'
 import { useLearning } from '../services/context'
@@ -45,7 +55,7 @@ export function Header() {
   const [menu, setMenu] = useState(false)
   const navigation = [
     ['/', 'الرئيسية'],
-    ['/programs', 'برامجنا'],
+    ['/programs', 'الدورات التدريبية'],
     ['/about', 'عن تفاصيل'],
     ['/library', 'مكتبة التعلّم'],
     ['/contact', 'تواصل معنا'],
@@ -94,6 +104,79 @@ export function Header() {
   )
 }
 
+export function WhatsAppLink({
+  courseTitle,
+  children,
+  className = 'button',
+}: {
+  courseTitle?: string
+  children: ReactNode
+  className?: string
+}) {
+  return (
+    <a
+      className={className}
+      href={whatsappUrl(courseTitle)}
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      {children}
+      <WhatsappLogo size={22} />
+    </a>
+  )
+}
+export function SocialLinks() {
+  return (
+    <div className="social-links" aria-label="حسابات التواصل الاجتماعي">
+      {contact.instagram ? (
+        <a href={contact.instagram} target="_blank" rel="noopener noreferrer" aria-label="إنستقرام">
+          <InstagramLogo size={22} />
+        </a>
+      ) : (
+        <button
+          disabled
+          title="يُضاف حساب إنستقرام قريبًا"
+          aria-label="إنستقرام — يُضاف الحساب قريبًا"
+        >
+          <InstagramLogo size={22} />
+          <span>
+            إنستقرام <small>قريبًا</small>
+          </span>
+        </button>
+      )}
+      {contact.snapchat ? (
+        <a href={contact.snapchat} target="_blank" rel="noopener noreferrer" aria-label="سناب شات">
+          <SnapchatLogo size={22} />
+        </a>
+      ) : (
+        <button
+          disabled
+          title="يُضاف حساب سناب شات قريبًا"
+          aria-label="سناب شات — يُضاف الحساب قريبًا"
+        >
+          <SnapchatLogo size={22} />
+          <span>
+            سناب شات <small>قريبًا</small>
+          </span>
+        </button>
+      )}
+    </div>
+  )
+}
+export function FloatingWhatsApp() {
+  return (
+    <a
+      className="floating-whatsapp"
+      href={whatsappUrl()}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label="الحجز والاستفسار عبر واتساب"
+    >
+      <WhatsappLogo size={28} />
+      <span>احجز دورتك</span>
+    </a>
+  )
+}
 export function Footer() {
   return (
     <footer className="site-footer">
@@ -101,29 +184,36 @@ export function Footer() {
         <div className="footer-brand">
           <Brand />
           <p>
-            نفهم التفاصيل.
+            معرفة تتسع.
             <br />
-            لنصل إلى الصورة الأوضح.
+            ومهارات تتطور.
           </p>
+          <SocialLinks />
         </div>
         <div>
-          <h3>اكتشف تفاصيل</h3>
-          <Link to="/programs">البرامج التدريبية</Link>
+          <h3>مجالات التدريب</h3>
+          {courseGroups.map((g) => (
+            <Link to={`/programs/category/${g.id}`} key={g.id}>
+              {g.title}
+            </Link>
+          ))}
+        </div>
+        <div>
+          <h3>مركز تفاصيل</h3>
           <Link to="/about">عن المركز</Link>
-          <Link to="/contact">تواصل معنا</Link>
-        </div>
-        <div>
-          <h3>رحلتك في التعلّم</h3>
-          <Link to="/practice">التدريب التفاعلي</Link>
           <Link to="/library">مكتبة التعلّم</Link>
           <Link to="/dashboard">حساب المتدرب</Link>
+          <Link to="/contact">تواصل معنا</Link>
         </div>
         <div className="footer-message">
-          <span className="eyebrow">خطوتك القادمة</span>
-          <h3>ابدأ بفهم مهاراتك.</h3>
-          <Link to="/practice" className="text-link">
-            جرّب التدريب <ArrowLeft size={20} />
-          </Link>
+          <span className="eyebrow">الحجز والاستفسار</span>
+          <h3>نرتّب خطوتك القادمة.</h3>
+          <WhatsAppLink className="text-link">تواصل عبر واتساب</WhatsAppLink>
+          <a className="footer-phone" href={`tel:${contact.phone}`}>
+            <Phone size={19} />
+            <bdi>{contact.displayPhone}</bdi>
+          </a>
+          <p>الحجز والتأكيد عبر واتساب المركز.</p>
         </div>
       </div>
       <div className="container footer-bottom">
@@ -136,6 +226,10 @@ export function Footer() {
 }
 
 export function CourseIcon({ symbol, size = 36 }: { symbol: string; size?: number }) {
+  if (symbol === 'exams') return <GraduationCap size={size} weight="duotone" />
+  if (symbol === 'english') return <Translate size={size} weight="duotone" />
+  if (symbol === 'arts') return <Palette size={size} weight="duotone" />
+  if (symbol === 'development') return <Briefcase size={size} weight="duotone" />
   if (symbol === 'math') return <Calculator size={size} weight="duotone" />
   if (symbol === 'verbal') return <BookOpen size={size} weight="duotone" />
   if (symbol === 'target') return <Target size={size} weight="duotone" />
@@ -155,25 +249,18 @@ export function CourseCard({ course }: { course: Course }) {
     notify(saved ? 'أُزيل المسار من محفوظاتك.' : 'أُضيف المسار إلى محفوظاتك.')
   }
   return (
-    <article className={`course-card ${course.tone}`}>
-      <div className="course-art">
-        <div className="course-art-pattern" />
-        <span className="course-art-icon">
-          <CourseIcon symbol={course.symbol} size={52} />
-        </span>
-        <span className="course-art-type">
-          {course.category === 'كمي'
-            ? 'س + ص'
-            : course.category === 'لفظي'
-              ? 'أ ب ج'
-              : course.id === 'intensive'
-                ? 'فهم. تطبيق. إتقان.'
-                : 'لكل بداية، أساس.'}
-        </span>
-      </div>
+    <article className={`course-card photo-course ${course.tone}`}>
+      <Link
+        className="course-cover-link"
+        to={`/programs/${course.id}`}
+        tabIndex={-1}
+        aria-hidden="true"
+      >
+        <img src={course.image} alt="" width="1200" height="800" loading="lazy" decoding="async" />
+      </Link>
       <div className="course-body">
         <div className="course-meta">
-          <span>{course.category === 'شامل' ? 'كمي ولفظي' : `مسار ${course.category}`}</span>
+          <span>{course.category}</span>
           <button
             className={`icon-button bookmark ${saved ? 'saved' : ''}`}
             aria-label={saved ? `إلغاء حفظ ${course.title}` : `حفظ ${course.title}`}
@@ -193,7 +280,7 @@ export function CourseCard({ course }: { course: Course }) {
             {course.level}
           </span>
           <Link className="text-link" to={`/programs/${course.id}`}>
-            اكتشف المسار <ArrowLeft size={18} />
+            تفاصيل الدورة <ArrowLeft size={18} />
           </Link>
         </div>
       </div>
@@ -276,19 +363,15 @@ export function BottomCTA() {
     <section className="container">
       <div className="bottom-cta">
         <div>
-          <span className="eyebrow">استعداد يستحق البداية</span>
+          <span className="eyebrow">بداية مدروسة</span>
           <h2>
-            خطوة صغيرة اليوم.
+            اختر هدفك.
             <br />
-            وفهم أوضح للغد.
+            ودعنا نرتّب التفاصيل.
           </h2>
+          <p>تعرّف على الدورة المناسبة ومواعيدها ورسومها قبل تأكيد الحجز.</p>
         </div>
-        <div className="bottom-cta-action">
-          <p>ابدأ بتدريب قصير، واكتشف ما تحتاج إلى تطويره.</p>
-          <Link className="button" to="/practice">
-            ابدأ التدريب الآن <ArrowLeft size={20} />
-          </Link>
-        </div>
+        <WhatsAppLink>تواصل للحجز</WhatsAppLink>
       </div>
     </section>
   )

@@ -1,74 +1,61 @@
 import { Link } from 'react-router-dom'
-import { ArrowLeft, ChatCircleText, GraduationCap, UserCircle } from '@phosphor-icons/react'
-import { FAQ, PageHeading } from '../components/Shared'
-import { useAuth } from '../auth/context'
+import { ArrowLeft, Phone, ChatCircleText, CheckCircle } from '@phosphor-icons/react'
+import { FAQ, PageHeading, SocialLinks, WhatsAppLink } from '../components/Shared'
+import { contact } from '../services/contact'
 export default function Contact() {
-  const { user } = useAuth()
   return (
     <>
       <PageHeading
         eyebrow="تواصل معنا"
-        title="لكل سؤال، تفاصيل أوضح."
-        description="استفسر عن مسارك، وتابع طلبك مع إدارة المركز من حسابك."
+        title="كل بداية، تبدأ بمحادثة."
+        description="للحجز والاستفسار عن الدورات، تواصل مع مركز تفاصيل مباشرة. نوضح لك الخيارات ونعتمد معك تفاصيل الحجز عبر واتساب."
       />
       <div className="container page-content">
-        <div className="contact-account-grid">
-          <div className="contact-account-main">
+        <div className="contact-booking-layout">
+          <section className="contact-booking-main">
             <span className="portal-icon">
-              <ChatCircleText size={30} />
+              <ChatCircleText size={31} />
             </span>
-            <h2>تواصل يبقى معك.</h2>
+            <span className="eyebrow">الحجز وتأكيد الحجز</span>
+            <h2>واتساب تفاصيل.</h2>
             <p>
-              أرسل رسالتك من حسابك لتبقى مرتبطة ببياناتك وكورساتك، وتابع رد الإدارة في المكان نفسه.
+              أرسل اسم الدورة التي تهتم بها. يوضح لك المركز المواعيد والرسوم ونمط التدريب
+              والمتطلبات، ثم يؤكد حجزك في المحادثة.
             </p>
-            <Link
-              className="button"
-              to={user ? '/dashboard/support' : '/login?next=%2Fdashboard%2Fsupport'}
-            >
-              {user ? 'فتح المراسلات' : 'تسجيل الدخول والتواصل'}
-              <ArrowLeft size={19} />
-            </Link>
-            {!user && (
-              <Link className="text-link" to="/register?next=%2Fdashboard%2Fsupport">
-                ليس لديك حساب؟ أنشئ حسابك
-              </Link>
-            )}
-          </div>
-          <div className="contact-account-help">
-            <article>
-              <GraduationCap size={27} />
-              <div>
-                <h3>الاستفسار عن الكورسات</h3>
-                <p>
-                  استعرض البرامج، ثم أرسل طلب الالتحاق من حسابك. تعتمد الإدارة الدفعة والرسوم قبل
-                  بدء التدريب.
-                </p>
-                <Link className="text-link" to="/programs">
-                  استعرض البرامج <ArrowLeft size={17} />
-                </Link>
-              </div>
-            </article>
-            <article>
-              <UserCircle size={27} />
-              <div>
-                <h3>المساعدة في الحساب</h3>
-                <p>
-                  يمكنك تعديل بياناتك وكلمة مرورك من إعدادات الحساب. عند تعذّر الدخول، راجع إدارة
-                  المركز للتحقق من هويتك واستعادة الوصول.
-                </p>
-                <Link className="text-link" to="/forgot-password">
-                  مساعدة في تسجيل الدخول <ArrowLeft size={17} />
-                </Link>
-              </div>
-            </article>
-          </div>
-        </div>
-        <section className="section">
-          <div className="section-heading">
-            <div>
-              <h2>إجابات تساعدك على البدء.</h2>
-              <p>معلومات مختصرة عن التدريب والتسجيل.</p>
+            <WhatsAppLink>ابدأ المحادثة</WhatsAppLink>
+            <div className="contact-confirm-note">
+              <CheckCircle size={21} />
+              <p>يُعد الحجز مؤكدًا بعد استلام تأكيد المركز عبر واتساب.</p>
             </div>
+          </section>
+          <aside className="contact-channels">
+            <div>
+              <Phone size={28} />
+              <h2>اتصل بالمركز</h2>
+              <a href={`tel:${contact.phone}`} className="contact-number">
+                <bdi>{contact.displayPhone}</bdi>
+              </a>
+              <p>الرقم نفسه للاتصال وواتساب.</p>
+            </div>
+            <div>
+              <h2>تابع تفاصيل</h2>
+              <p>حساباتنا الاجتماعية تُضاف قريبًا.</p>
+              <SocialLinks />
+            </div>
+            <div>
+              <h2>للمتدربين المسجلين</h2>
+              <p>تابع محتواك ودفعاتك أو أرسل استفسارًا يخص حسابك.</p>
+              <Link className="text-link" to="/dashboard/support">
+                مراسلات حسابي <ArrowLeft size={18} />
+              </Link>
+            </div>
+          </aside>
+        </div>
+        <section className="section faq-section">
+          <div>
+            <span className="eyebrow">قبل التواصل</span>
+            <h2>تفاصيل تساعدك.</h2>
+            <p>اختيار الدورة والحجز والمتابعة.</p>
           </div>
           <FAQ />
         </section>

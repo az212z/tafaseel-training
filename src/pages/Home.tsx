@@ -1,288 +1,202 @@
-import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import {
-  ArrowLeft,
-  ArrowUpLeft,
-  BookOpen,
-  Check,
-  CheckCircle,
-  Compass,
-  Lightbulb,
-  Target,
-  TrendUp,
-} from '@phosphor-icons/react'
-import { BottomCTA, CourseCard, FAQ } from '../components/Shared'
-import { questions } from '../data/content'
+import { ArrowLeft, ArrowUpLeft, BookOpen, CheckCircle, GraduationCap } from '@phosphor-icons/react'
+import { BottomCTA, CourseCard, CourseIcon, FAQ, WhatsAppLink } from '../components/Shared'
+import { courseGroups } from '../data/course-catalog'
 import { useCatalog } from '../services/catalog'
-
-function HeroQuestion() {
-  const [answer, setAnswer] = useState<number | null>(null)
-  const question = questions[0]
-  return (
-    <div className="hero-visual">
-      <div className="visual-pattern" />
-      <div className="visual-note">
-        <span className="note-symbol">
-          <Lightbulb size={26} weight="duotone" />
-        </span>
-        <span>
-          كل فكرة تفهمها،
-          <br />
-          <strong>خطوة تتقدمها.</strong>
-        </span>
-      </div>
-      <div className="question-paper">
-        <div className="paper-heading">
-          <span>
-            <span className="tiny-mark" />
-            تدريب من تفاصيل
-          </span>
-          <span>القدرات الكمي</span>
-        </div>
-        <div className="paper-title">
-          <span className="eyebrow">فكّر فيها</span>
-          <h2>
-            الفهم أولًا.
-            <br />
-            <span>ثم الإجابة.</span>
-          </h2>
-        </div>
-        <p className="hero-question-text">{question.text}</p>
-        <div className="hero-options" role="group" aria-label="اختر إجابتك عن السؤال التجريبي">
-          {question.options.map((option, i) => (
-            <button
-              key={option}
-              className={answer === i ? (i === question.correct ? 'correct' : 'incorrect') : ''}
-              onClick={() => setAnswer(i)}
-              aria-pressed={answer === i}
-            >
-              {option}
-              {answer === i && i === question.correct && <Check size={18} />}
-            </button>
-          ))}
-        </div>
-        <div className={`paper-footer ${answer !== null ? 'answered' : ''}`} aria-live="polite">
-          {answer === null ? (
-            <>
-              <span>جرّب بنفسك</span>
-              <ArrowUpLeft size={18} />
-            </>
-          ) : (
-            <span>
-              {answer === question.correct ? 'أحسنت. ' : 'لنراجع الفكرة. '}
-              {question.explanation}
-            </span>
-          )}
-        </div>
-      </div>
-      <div className="visual-stamp">
-        <Compass size={31} weight="light" />
-        <span>
-          الفهم يصنع
-          <br />
-          <strong>الفرق</strong>
-        </span>
-      </div>
-      <span className="visual-side-label">تعلّم بمعنى، وتدرّب بوعي.</span>
-    </div>
-  )
-}
-
 export default function Home() {
   const { courses, loading, error } = useCatalog()
+  const featured = [
+    'foundation',
+    'english-foundations',
+    'professional-development',
+    'interior-design',
+  ]
+    .map((id) => courses.find((c) => c.id === id))
+    .filter((c) => !!c)
   return (
     <>
-      <section className="hero container">
-        <div className="hero-copy">
+      <section className="container institute-hero">
+        <div className="institute-hero-copy">
           <span className="eyebrow hero-eyebrow">
             <span />
-            في تفاصيل، لكل طموح بداية
+            مركز تفاصيل للتدريب
           </span>
           <h1>
-            استعدادك يبدأ
+            تعلّم يفتح لك
             <br />
-            <span>بفهمك.</span>
+            <span>آفاقًا أوسع.</span>
           </h1>
           <p>
-            نرافقك في الاستعداد للقدرات، من تأسيس المفاهيم إلى التدريب الواعي. خطوة واضحة، في كل
-            مرة.
+            من الاستعداد للاختبارات إلى تطوير اللغة والمهارات والفنون. برامج تدريبية واضحة، تبدأ من
+            احتياجك وترافق خطوتك التالية.
           </p>
           <div className="hero-actions">
             <Link className="button" to="/programs">
-              اكتشف برامجنا <ArrowLeft size={21} />
+              استكشف الدورات <ArrowLeft size={21} />
             </Link>
-            <Link className="hero-secondary" to="/practice">
+            <WhatsAppLink className="text-link">تواصل للحجز</WhatsAppLink>
+          </div>
+          <div className="hero-small-note">
+            <CheckCircle size={18} />
+            <span>اختيار الدورة، تفاصيلها وتأكيد حجزها عبر واتساب.</span>
+          </div>
+        </div>
+        <div className="institute-hero-art">
+          <div className="institute-pattern" />
+          <figure className="hero-main-photo">
+            <img
+              src="./images/courses/interior-design.webp"
+              alt="عينات خامات ومخطط يمثل بداية الفكرة في التصميم"
+              width="1200"
+              height="800"
+              fetchPriority="high"
+            />
+            <figcaption>
               <span>
-                <ArrowUpLeft size={22} />
+                معرفة تتسع.
+                <br />
+                <strong>ومهارات تتطور.</strong>
               </span>
-              جرّب التدريب
-            </Link>
-          </div>
+              <ArrowUpLeft size={26} />
+            </figcaption>
+          </figure>
+          <figure className="hero-small-photo">
+            <img
+              src="./images/courses/english-foundations.webp"
+              alt="أدوات لتعلّم اللغة الإنجليزية"
+              width="1200"
+              height="800"
+            />
+            <figcaption>
+              <BookOpen size={19} /> لكل بداية، أساس.
+            </figcaption>
+          </figure>
+          <span className="hero-art-label">تعلّم بمعنى. وتقدّم بوعي.</span>
         </div>
-        <HeroQuestion />
       </section>
-      <div className="container">
-        <div className="learning-principles">
-          <div>
-            <Compass weight="duotone" />
-            <span>تأسيس يبني فهمك</span>
-          </div>
-          <div>
-            <BookOpen weight="duotone" />
-            <span>تدريب يطوّر مهاراتك</span>
-          </div>
-          <div>
-            <Target weight="duotone" />
-            <span>مراجعة توضّح خطوتك</span>
-          </div>
-          <div>
-            <TrendUp weight="duotone" />
-            <span>تقدّم تتابعه بنفسك</span>
-          </div>
-        </div>
-      </div>
-
-      <section className="section container programs-section">
+      <section className="container home-fields">
         <div className="section-heading">
           <div>
-            <span className="eyebrow">البرامج التدريبية</span>
+            <span className="eyebrow">مجالات التدريب</span>
             <h2>
-              مسارك الأنسب،
-              <br className="mobile-break" /> من هنا.
+              مسارات متنوعة.
+              <br className="mobile-break" /> ووجهة واحدة لتطوّرك.
             </h2>
-            <p>ابدأ بالأساسيات أو ركّز على المهارة التي تحتاجها.</p>
           </div>
-          <Link to="/programs" className="text-link">
-            جميع البرامج <ArrowLeft size={20} />
+          <Link className="text-link" to="/programs">
+            جميع الدورات <ArrowLeft size={20} />
+          </Link>
+        </div>
+        <div className="field-grid">
+          {courseGroups.map((g) => (
+            <Link key={g.id} to={`/programs/category/${g.id}`} className="field-card">
+              <div className="field-card-top">
+                <CourseIcon symbol={g.id} size={34} />
+                <span>{g.label}</span>
+              </div>
+              <h3>{g.title}</h3>
+              <p>{g.description}</p>
+              <span className="text-link">
+                استكشف المجال <ArrowLeft size={19} />
+              </span>
+            </Link>
+          ))}
+        </div>
+      </section>
+      <section className="section container featured-courses">
+        <div className="section-heading">
+          <div>
+            <span className="eyebrow">تعرّف على دوراتنا</span>
+            <h2>خطوتك القادمة، تبدأ هنا.</h2>
+            <p>لمحة من مجالاتنا. تجد جميع الدورات ومحاورها في دليل البرامج.</p>
+          </div>
+          <Link className="text-link" to="/programs">
+            دليل الدورات <ArrowLeft size={20} />
           </Link>
         </div>
         {loading ? (
-          <div className="portal-loading" role="status">
-            جارٍ تحميل البرامج…
+          <div className="catalog-skeleton" role="status" aria-label="جارٍ تحميل الدورات">
+            <div />
+            <div />
+            <div />
           </div>
         ) : error ? (
           <div className="empty-state">
-            <h3>تعذّر تحميل البرامج</h3>
-            <p>تحقق من الاتصال، ثم أعد المحاولة.</p>
+            <h3>تعذّر تحميل الدورات</h3>
             <button className="button button-outline" onClick={() => location.reload()}>
               إعادة المحاولة
             </button>
           </div>
-        ) : courses.length ? (
-          <div className="home-programs">
-            {courses.slice(0, 3).map((course) => (
-              <CourseCard key={course.id} course={course} />
+        ) : featured.length ? (
+          <div className="home-course-gallery">
+            {featured.map((c) => (
+              <CourseCard key={c.id} course={c} />
             ))}
           </div>
         ) : (
-          <div className="empty-state">
-            <h3>تُعلن البرامج الجديدة هنا قريبًا.</h3>
-          </div>
+          <div className="empty-state">تُعلن الدورات الجديدة هنا قريبًا.</div>
         )}
       </section>
-
-      <section className="method-section">
-        <div className="container method-layout">
-          <div className="method-intro">
-            <span className="eyebrow">التعلّم في تفاصيل</span>
+      <section className="institute-method">
+        <div className="container institute-method-inner">
+          <div>
+            <span className="eyebrow">تجربة تفاصيل</span>
             <h2>
-              لا تحفظ الخطوات.
+              وضوح في الاختيار.
               <br />
-              <span>افهم ما وراءها.</span>
+              <span>اهتمام بالتعلّم.</span>
             </h2>
             <p>
-              السؤال يتغير، والفكرة تبقى. لهذا نبني رحلة تدريب تبدأ بالفهم وتنتهي بقدرتك على
-              التطبيق.
+              تعرف ما الذي ستتعلّمه، ولمن تناسب الدورة، وما تحتاجه قبل البداية. ثم نرتّب معك تفاصيل
+              الحجز والتسجيل.
             </p>
             <Link className="text-link" to="/about">
-              تعرّف على تفاصيل <ArrowLeft size={20} />
+              عن مركز تفاصيل <ArrowLeft size={19} />
             </Link>
-            <div className="method-pattern" />
           </div>
-          <div className="method-steps">
-            <article>
-              <span className="step-icon">
-                <Compass size={28} />
-              </span>
+          <ol>
+            <li>
+              <span>١</span>
               <div>
-                <h3>أسّس فهمك</h3>
-                <p>مفاهيم واضحة وأمثلة تربط الفكرة بطريقة الحل.</p>
+                <h3>اختر ما يخدم هدفك</h3>
+                <p>تصفّح المجالات، واقرأ نبذة الدورة ومحاورها والفئة المستهدفة.</p>
               </div>
-            </article>
-            <article>
-              <span className="step-icon">
-                <BookOpen size={28} />
-              </span>
+            </li>
+            <li>
+              <span>٢</span>
               <div>
-                <h3>تدرّب بوعي</h3>
-                <p>طبّق ما تعلمته، واقرأ السؤال قبل اختيار الإجابة.</p>
+                <h3>ناقش التفاصيل وأكّد الحجز</h3>
+                <p>تواصل عبر واتساب لمعرفة المواعيد والرسوم ونمط التدريب.</p>
               </div>
-            </article>
-            <article>
-              <span className="step-icon">
-                <CheckCircle size={28} />
-              </span>
+            </li>
+            <li>
+              <span>٣</span>
               <div>
-                <h3>راجع وتقدّم</h3>
-                <p>افهم سبب الخطأ، وحدد ما يستحق أن تعود إليه.</p>
+                <h3>تابع تعلّمك من حسابك</h3>
+                <p>بعد اعتماد تسجيلك، تجد محتواك وتقدمك وسجل دفعاتك في حسابك.</p>
               </div>
-            </article>
-          </div>
+            </li>
+          </ol>
         </div>
       </section>
-
-      <section className="section container tools-section">
-        <div className="section-heading">
-          <div>
-            <h2>تعلّم يستمر معك.</h2>
-            <p>أدوات بسيطة تجعل استعدادك أكثر تنظيمًا.</p>
-          </div>
+      <section className="container institute-account">
+        <GraduationCap size={36} weight="duotone" />
+        <div>
+          <span className="eyebrow">للمتدربين المسجلين</span>
+          <h2>كل ما يخص رحلتك، في مكان واحد.</h2>
+          <p>كورساتك، دروسك، تقدمك ودفعاتك، ضمن حسابك الخاص.</p>
         </div>
-        <div className="tools-grid">
-          <Link to="/dashboard" className="tool-feature">
-            <div className="tool-feature-copy">
-              <span className="eyebrow">مساحتك الشخصية</span>
-              <h3>
-                اعرف أين وصلت.
-                <br />
-                وما خطوتك القادمة.
-              </h3>
-              <p>كورساتك، تقدمك في الدروس، ودفعاتك. كل تفاصيل رحلتك في حساب واحد.</p>
-              <span className="text-link">
-                الدخول إلى حسابك <ArrowLeft size={20} />
-              </span>
-            </div>
-            <div className="tool-feature-symbol">
-              <TrendUp weight="thin" size={110} />
-            </div>
-          </Link>
-          <Link to="/library" className="tool-library">
-            <BookOpen size={38} weight="duotone" />
-            <div>
-              <h3>
-                فكرة مفيدة،
-                <br />
-                في وقت قصير.
-              </h3>
-              <p>أدلة للمذاكرة، ومهارات للحل، وخطة قابلة للتحميل.</p>
-            </div>
-            <span className="text-link">
-              تصفّح المكتبة <ArrowLeft size={20} />
-            </span>
-          </Link>
-        </div>
+        <Link className="button button-outline" to="/login">
+          دخول المتدرب <ArrowLeft size={19} />
+        </Link>
       </section>
-
       <section className="section container faq-section">
         <div>
           <span className="eyebrow">قبل أن تبدأ</span>
-          <h2>أسئلة في بالك.</h2>
-          <p>إجابات واضحة تساعدك على اختيار خطوتك.</p>
-          <Link className="text-link" to="/contact">
-            لديك استفسار آخر؟ <ArrowLeft size={20} />
-          </Link>
+          <h2>تفاصيل تهمك.</h2>
+          <p>إجابات مختصرة عن اختيار الدورات والحجز والتعلّم.</p>
         </div>
-        <FAQ limited />
+        <FAQ />
       </section>
       <BottomCTA />
     </>

@@ -1,38 +1,42 @@
-import { useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useEffect } from 'react'
+import { Link, Navigate, useParams } from 'react-router-dom'
 import {
   ArrowLeft,
+  ArrowRight,
   BookmarkSimple,
   Check,
   GraduationCap,
-  Info,
-  ArrowRight,
+  Users,
+  CalendarBlank,
+  Phone,
 } from '@phosphor-icons/react'
-import { BottomCTA, CourseIcon, PageHeading } from '../components/Shared'
+import { CourseCard, WhatsAppLink } from '../components/Shared'
+import { groupFor } from '../data/course-catalog'
 import { useCatalog } from '../services/catalog'
-import { useAuth } from '../auth/context'
-import { errorMessage, money, supabase } from '../services/backend'
+import { money } from '../services/backend'
+import { contact } from '../services/contact'
 import { useLearning } from '../services/context'
 import { arNumber } from '../services/learning'
-
 export default function CourseDetail() {
-  const { id } = useParams()
-  const { courses, loading, error } = useCatalog()
-  const { user } = useAuth()
-  const navigate = useNavigate()
-  const [busy, setBusy] = useState(false)
-  const course = courses.find((c) => c.id === id)
-  const { state, update, notify } = useLearning()
+  const { id } = useParams(),
+    { courses, loading, error } = useCatalog(),
+    { state, update, notify } = useLearning(),
+    course = courses.find((c) => c.id === id)
+  useEffect(() => {
+    if (course) document.title = `${course.title} | مركز تفاصيل للتدريب`
+  }, [course])
+  if (['quantitative', 'verbal', 'intensive'].includes(id || ''))
+    return <Navigate to="/programs/foundation" replace />
   if (loading)
     return (
       <div className="portal-loading" role="status">
-        جارٍ تحميل البرنامج…
+        جارٍ تحميل الدورة…
       </div>
     )
   if (error)
     return (
       <div className="container error-page">
-        <h1>تعذّر تحميل البرنامج</h1>
+        <h1>تعذّر تحميل الدورة</h1>
         <p>تحقق من الاتصال، ثم أعد المحاولة.</p>
         <button className="button" onClick={() => location.reload()}>
           إعادة المحاولة
@@ -42,150 +46,198 @@ export default function CourseDetail() {
   if (!course)
     return (
       <div className="container error-page">
-        <h1>المسار غير موجود</h1>
-        <Link to="/programs" className="button">
-          تصفح البرامج <ArrowLeft />
+        <h1>الدورة غير متاحة حاليًا</h1>
+        <Link className="button" to="/programs">
+          تصفّح الدورات <ArrowLeft />
         </Link>
       </div>
     )
-  const saved = state.savedCourses.includes(course.id)
+  const group = groupFor(course.groupId)!,
+    saved = state.savedCourses.includes(course.id),
+    related = courses.filter((c) => c.groupId === course.groupId && c.id !== course.id).slice(0, 3)
   return (
     <>
-      <PageHeading eyebrow="تفاصيل البرنامج" title={course.title} description={course.short} />
-      <section className="container course-detail-layout page-content">
-        <div className="course-detail-main">
-          <Link className="text-link back-link" to="/programs">
-            <ArrowRight size={18} /> جميع البرامج
-          </Link>
-          <div className={`detail-banner ${course.tone}`}>
-            <div className="detail-banner-pattern" />
-            <CourseIcon symbol={course.symbol} size={84} />
-            <div>
-              <span>
-                {course.category === 'شامل'
-                  ? 'القدرات الكمي واللفظي'
-                  : `مسار القدرات ${course.category}`}
-              </span>
-              <h2>{course.short}</h2>
-            </div>
-          </div>
-          <div className="content-block">
-            <h2>عن المسار</h2>
+      <div className="container course-page">
+        <nav className="breadcrumbs" aria-label="مسار التصفح">
+          <Link to="/">الرئيسية</Link>
+          <span>/</span>
+          <Link to="/programs">الدورات</Link>
+          <span>/</span>
+          <Link to={`/programs/category/${group.id}`}>{group.title}</Link>
+          <span>/</span>
+          <span>{course.title}</span>
+        </nav>
+        <section className="course-profile-hero">
+          <div className="course-profile-copy">
+            <Link className="eyebrow" to={`/programs/category/${group.id}`}>
+              {group.title}
+            </Link>
+            <h1>{course.title}</h1>
+            <p className="course-tagline">{course.short}</p>
             <p>{course.description}</p>
+            <div className="course-profile-actions">
+              <WhatsAppLink courseTitle={course.title}>احجز عبر واتساب</WhatsAppLink>
+              <button
+                className={`icon-button course-save ${saved ? 'saved' : ''}`}
+                aria-label={saved ? `إلغاء حفظ ${course.title}` : `حفظ ${course.title}`}
+                aria-pressed={saved}
+                onClick={() => {
+                  update((s) => ({
+                    ...s,
+                    savedCourses: saved
+                      ? s.savedCourses.filter((x) => x !== course.id)
+                      : [...s.savedCourses, course.id],
+                  }))
+                  notify(saved ? 'أُزيلت الدورة من محفوظاتك.' : 'أُضيفت الدورة إلى محفوظاتك.')
+                }}
+              >
+                <BookmarkSimple size={24} weight={saved ? 'fill' : 'regular'} />
+              </button>
+            </div>
+            <span className="booking-caption">
+              نؤكد معك الموعد والرسوم ومتطلبات الدورة في المحادثة.
+            </span>
           </div>
-          {course.topics.length > 0 && (
-            <div className="content-block">
-              <h2>ما الذي ستتعلّمه؟</h2>
-              <div className="curriculum">
-                {course.topics.map((topic, i) => (
-                  <div key={topic}>
-                    <span>{arNumber(i + 1).padStart(2, '٠')}</span>
-                    <h3>{topic}</h3>
-                    <Check size={18} />
-                  </div>
-                ))}
+          <figure className="course-profile-image">
+            <img
+              src={course.image}
+              alt={course.imageAlt}
+              width="1200"
+              height="800"
+              fetchPriority="high"
+            />
+            <figcaption>
+              <span>تفاصيل / {group.short}</span>
+              <GraduationCap size={22} />
+            </figcaption>
+          </figure>
+        </section>
+        <div className="course-information-layout">
+          <div className="course-information">
+            <section>
+              <span className="eyebrow">نبذة عن الدورة</span>
+              <h2>معرفة واضحة، وتطبيق له هدف.</h2>
+              <p>{course.overview}</p>
+            </section>
+            {course.topics.length > 0 && (
+              <section>
+                <h2>محاور التعلّم</h2>
+                <div className="course-topics">
+                  {course.topics.map((t, i) => (
+                    <div key={t}>
+                      <span>{arNumber(i + 1).padStart(2, '٠')}</span>
+                      <h3>{t}</h3>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+            {course.outcomes.length > 0 && (
+              <section>
+                <h2>المهارات التي تعمل على تطويرها</h2>
+                <ul className="check-list">
+                  {course.outcomes.map((t) => (
+                    <li key={t}>
+                      <Check size={20} />
+                      {t}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
+            <section className="course-audience">
+              <Users size={29} />
+              <div>
+                <h2>لمن هذه الدورة؟</h2>
+                <p>{course.audience}</p>
+                <h3>قبل البداية</h3>
+                <p>{course.prerequisites}</p>
               </div>
-            </div>
-          )}
-          {course.outcomes.length > 0 && (
-            <div className="content-block">
-              <h2>ما الذي ستعمل على تطويره؟</h2>
-              <ul className="check-list">
-                {course.outcomes.map((outcome) => (
-                  <li key={outcome}>
-                    <Check size={20} />
-                    {outcome}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-          <div className="content-block">
-            <h2>كيف تستفيد من المسار؟</h2>
-            <p>
-              ابدأ بمراجعة المفهوم، ثم حل الأمثلة بنفسك. خصص وقتًا لمراجعة الأخطاء قبل الانتقال إلى
-              مهارة جديدة، وسجّل النقاط التي تحتاج إلى إعادة شرح.
-            </p>
+            </section>
           </div>
+          <aside className="booking-panel" aria-label="تفاصيل الحجز">
+            <span className="eyebrow">خطوتك التالية</span>
+            <h2>نرتّب بدايتك معك.</h2>
+            <dl>
+              <div>
+                <dt>المستوى</dt>
+                <dd>{course.level}</dd>
+              </div>
+              <div>
+                <dt>المواعيد ونمط الحضور</dt>
+                <dd>بالتنسيق مع المركز</dd>
+              </div>
+              <div>
+                <dt>الرسوم</dt>
+                <dd>{course.price === null ? 'تُوضح قبل تأكيد الحجز' : money(course.price)}</dd>
+              </div>
+              {course.duration_hours !== null && (
+                <div>
+                  <dt>الساعات التدريبية</dt>
+                  <dd>{arNumber(course.duration_hours)} ساعة</dd>
+                </div>
+              )}
+              <div>
+                <dt>الحجز والتأكيد</dt>
+                <dd>عبر واتساب</dd>
+              </div>
+            </dl>
+            <WhatsAppLink courseTitle={course.title}>ابدأ الحجز</WhatsAppLink>
+            <a className="booking-phone" href={`tel:${contact.phone}`}>
+              <Phone size={18} />
+              <bdi>{contact.displayPhone}</bdi>
+            </a>
+            <p>يُعتمد الحجز بعد تأكيد المركز عبر واتساب. فتح المحادثة وحده لا يؤكد الحجز.</p>
+          </aside>
         </div>
-        <aside className="course-enrol">
-          <span className="eyebrow">خطوتك التالية</span>
-          <h2>ابدأ بما يناسبك.</h2>
-          <div className="enrol-detail">
-            <GraduationCap size={23} />
-            <span>
-              المستوى<strong>{course.level}</strong>
-            </span>
+        <section className="booking-steps">
+          <div>
+            <CalendarBlank size={28} />
+            <h2>حجز واضح من أول خطوة.</h2>
           </div>
-          <div className="enrol-detail">
-            <CourseIcon symbol={course.symbol} size={23} />
-            <span>
-              المحتوى
-              <strong>
-                {course.topics.length
-                  ? `${arNumber(course.topics.length)} محاور تدريبية`
-                  : 'محتوى تدريبي منظم'}
-              </strong>
-            </span>
-          </div>
-          <div className="enrol-info">
-            <Info size={20} />
-            <p>
-              {course.price === null
-                ? 'الرسوم تُحدد عند قبول طلبك.'
-                : `الرسوم المعلنة: ${money(course.price)}.`}{' '}
-              تختار الإدارة الدفعة المناسبة وتؤكد تفاصيل التسجيل.
-            </p>
-          </div>
-          <button
-            className="button full-width"
-            disabled={busy}
-            onClick={async () => {
-              if (!user) {
-                navigate(`/login?next=${encodeURIComponent(`/programs/${course.id}`)}`)
-                return
-              }
-              setBusy(true)
-              try {
-                const { error } = await supabase.rpc('request_enrollment', { p_course: course.id })
-                if (error) throw error
-                notify('طلب الالتحاق مسجل في حسابك. تابع حالة القبول في كورساتي.')
-                navigate('/dashboard/courses')
-              } catch (e) {
-                notify(errorMessage(e))
-              } finally {
-                setBusy(false)
-              }
-            }}
-          >
-            {busy ? 'جارٍ إرسال الطلب…' : 'طلب الالتحاق بالكورس'}
-            <ArrowLeft size={19} />
-          </button>
-          <button
-            className="button button-outline full-width"
-            aria-pressed={saved}
-            onClick={() => {
-              update((s) => ({
-                ...s,
-                savedCourses: saved
-                  ? s.savedCourses.filter((x) => x !== course.id)
-                  : [...s.savedCourses, course.id],
-              }))
-              notify(saved ? 'أُزيل المسار من محفوظاتك.' : 'تم حفظ المسار في مساحة المتدرب.')
-            }}
-          >
-            <BookmarkSimple size={20} weight={saved ? 'fill' : 'regular'} />
-            {saved ? 'المسار محفوظ' : 'احفظ المسار لوقت لاحق'}
-          </button>
-          <Link
-            className="enrol-practice"
-            to={`/practice?mode=${course.category === 'كمي' ? 'quantitative' : course.category === 'لفظي' ? 'verbal' : 'all'}`}
-          >
-            جرّب أسئلة من هذا المسار <ArrowLeft size={17} />
-          </Link>
-        </aside>
-      </section>
-      <BottomCTA />
+          <ol>
+            <li>
+              <span>١</span>
+              <div>
+                <h3>تواصل باسم الدورة</h3>
+                <p>يفتح زر الحجز رسالة جاهزة باسم الدورة التي اخترتها.</p>
+              </div>
+            </li>
+            <li>
+              <span>٢</span>
+              <div>
+                <h3>راجع التفاصيل</h3>
+                <p>ناقش المواعيد والرسوم ونمط التدريب والمتطلبات مع المركز.</p>
+              </div>
+            </li>
+            <li>
+              <span>٣</span>
+              <div>
+                <h3>استلم تأكيدك</h3>
+                <p>يؤكد المركز الحجز عبر واتساب ويضيف تسجيلك إلى حسابك.</p>
+              </div>
+            </li>
+          </ol>
+        </section>
+        {related.length > 0 && (
+          <section className="related-courses">
+            <div className="section-heading">
+              <h2>اكتشف المزيد في هذا المجال.</h2>
+              <Link className="text-link" to={`/programs/category/${group.id}`}>
+                جميع دورات المجال <ArrowLeft size={19} />
+              </Link>
+            </div>
+            <div className="course-gallery">
+              {related.map((c) => (
+                <CourseCard key={c.id} course={c} />
+              ))}
+            </div>
+          </section>
+        )}
+        <Link className="text-link course-back" to="/programs">
+          <ArrowRight size={18} /> العودة إلى جميع الدورات
+        </Link>
+      </div>
     </>
   )
 }

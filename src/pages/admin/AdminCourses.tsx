@@ -11,6 +11,7 @@ import { Badge, Empty, Modal, MutationForm, Panel } from '../../components/porta
 import { errorMessage, money, supabase } from '../../services/backend'
 import type { CourseRecord, Lesson, PlatformData } from '../../services/backend'
 import { useLearning } from '../../services/context'
+import { courseGroups } from '../../data/course-catalog'
 import { arNumber } from '../../services/learning'
 export default function AdminCourses({
   data,
@@ -71,7 +72,13 @@ export default function AdminCourses({
           {courses.map((c) => (
             <article className="admin-course-card" key={c.id}>
               <div className="admin-course-visual">
-                <BookOpen size={40} weight="duotone" />
+                <>
+                  {c.image_path ? (
+                    <img src={c.image_path} alt="" loading="lazy" />
+                  ) : (
+                    <BookOpen size={40} weight="duotone" />
+                  )}
+                </>
                 <Badge status={c.status} />
               </div>
               <div className="admin-course-body">
@@ -181,7 +188,28 @@ export default function AdminCourses({
               const value = {
                 title: String(f.get('title')).trim(),
                 summary: String(f.get('summary')).trim(),
-                category: f.get('category'),
+                category:
+                  courseGroups.find((g) => g.id === f.get('group_id'))?.title ||
+                  'الاختبارات التعليمية',
+                group_id: f.get('group_id'),
+                is_listed: f.get('is_listed') === 'on',
+                image_path: String(f.get('image_path') || '').trim(),
+                sort_order: Number(f.get('sort_order') || 100),
+                details: {
+                  short: String(f.get('short') || ''),
+                  overview: String(f.get('overview') || ''),
+                  audience: String(f.get('audience') || ''),
+                  prerequisites: String(f.get('prerequisites') || ''),
+                  imageAlt: String(f.get('imageAlt') || ''),
+                  topics: String(f.get('topics') || '')
+                    .split('\n')
+                    .map((s) => s.trim())
+                    .filter(Boolean),
+                  outcomes: String(f.get('outcomes') || '')
+                    .split('\n')
+                    .map((s) => s.trim())
+                    .filter(Boolean),
+                },
                 level: f.get('level'),
                 status: f.get('status'),
                 price: f.get('price') === '' ? null : Number(f.get('price')),
@@ -192,10 +220,10 @@ export default function AdminCourses({
                 ? await supabase.from('courses').update(value).eq('id', editingCourse.id)
                 : await supabase.from('courses').insert(value)
               if (error) throw error
+              await refresh()
             }}
             onDone={() => {
               setEditing(null)
-              void refresh()
               notify('تم حفظ الكورس.')
             }}
           >
@@ -221,10 +249,12 @@ export default function AdminCourses({
             <div className="form-two-col">
               <label>
                 المسار
-                <select name="category" defaultValue={editingCourse?.category || 'شامل'}>
-                  <option>شامل</option>
-                  <option>كمي</option>
-                  <option>لفظي</option>
+                <select name="group_id" defaultValue={editingCourse?.group_id || 'exams'}>
+                  {courseGroups.map((g) => (
+                    <option key={g.id} value={g.id}>
+                      {g.title}
+                    </option>
+                  ))}
                 </select>
               </label>
               <label>
@@ -236,6 +266,103 @@ export default function AdminCourses({
                 />
               </label>
             </div>
+            <label>
+              العبارة التعريفية
+              <input
+                name="short"
+                maxLength={200}
+                defaultValue={String(editingCourse?.details?.short || '')}
+              />
+            </label>
+            <label>
+              نبذة تفصيلية
+              <textarea
+                name="overview"
+                rows={5}
+                maxLength={3000}
+                defaultValue={String(editingCourse?.details?.overview || '')}
+              />
+            </label>
+            <label>
+              الفئة المستهدفة
+              <textarea
+                name="audience"
+                rows={2}
+                maxLength={1000}
+                defaultValue={String(editingCourse?.details?.audience || '')}
+              />
+            </label>
+            <label>
+              متطلبات البداية
+              <textarea
+                name="prerequisites"
+                rows={2}
+                maxLength={1000}
+                defaultValue={String(editingCourse?.details?.prerequisites || '')}
+              />
+            </label>
+            <label>
+              محاور التعلّم — كل محور في سطر
+              <textarea
+                name="topics"
+                rows={5}
+                maxLength={4000}
+                defaultValue={
+                  Array.isArray(editingCourse?.details?.topics)
+                    ? editingCourse.details.topics.join('\n')
+                    : ''
+                }
+              />
+            </label>
+            <label>
+              المهارات المتوقعة — كل مهارة في سطر
+              <textarea
+                name="outcomes"
+                rows={4}
+                maxLength={4000}
+                defaultValue={
+                  Array.isArray(editingCourse?.details?.outcomes)
+                    ? editingCourse.details.outcomes.join('\n')
+                    : ''
+                }
+              />
+            </label>
+            <label>
+              رابط صورة الدورة
+              <input
+                name="image_path"
+                dir="ltr"
+                maxLength={2000}
+                placeholder="https://…"
+                defaultValue={editingCourse?.image_path || ''}
+              />
+            </label>
+            <label>
+              وصف الصورة
+              <input
+                name="imageAlt"
+                maxLength={300}
+                defaultValue={String(editingCourse?.details?.imageAlt || '')}
+              />
+            </label>
+            <label>
+              ترتيب الظهور
+              <input
+                name="sort_order"
+                type="number"
+                min="0"
+                max="10000"
+                defaultValue={editingCourse?.sort_order ?? 100}
+              />
+            </label>
+            <label className="checkbox-label">
+              <input
+                name="is_listed"
+                type="checkbox"
+                defaultChecked={editingCourse?.is_listed ?? true}
+              />{' '}
+              إظهار الدورة في دليل البرامج
+            </label>
             <div className="form-two-col">
               <label>
                 الرسوم المعلنة (ر.س)
@@ -265,7 +392,7 @@ export default function AdminCourses({
               حالة الكورس
               <select name="status" defaultValue={editingCourse?.status || 'draft'}>
                 <option value="draft">مسودة — غير متاح للمتدربين</option>
-                <option value="active">نشط — يستقبل طلبات الالتحاق</option>
+                <option value="active">نشط — متاح للتدريب والحجز عبر واتساب</option>
                 <option value="archived">مؤرشف — إيقاف الإتاحة</option>
               </select>
             </label>
