@@ -1,4 +1,5 @@
-import { Link, useParams } from 'react-router-dom'
+import { useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import {
   ArrowLeft,
   BookmarkSimple,
@@ -8,14 +9,36 @@ import {
   ArrowRight,
 } from '@phosphor-icons/react'
 import { BottomCTA, CourseIcon, PageHeading } from '../components/Shared'
-import { courses } from '../data/content'
+import { useCatalog } from '../services/catalog'
+import { useAuth } from '../auth/context'
+import { errorMessage, money, supabase } from '../services/backend'
 import { useLearning } from '../services/context'
 import { arNumber } from '../services/learning'
 
 export default function CourseDetail() {
   const { id } = useParams()
+  const { courses, loading, error } = useCatalog()
+  const { user } = useAuth()
+  const navigate = useNavigate()
+  const [busy, setBusy] = useState(false)
   const course = courses.find((c) => c.id === id)
   const { state, update, notify } = useLearning()
+  if (loading)
+    return (
+      <div className="portal-loading" role="status">
+        جارٍ تحميل البرنامج…
+      </div>
+    )
+  if (error)
+    return (
+      <div className="container error-page">
+        <h1>تعذّر تحميل البرنامج</h1>
+        <p>تحقق من الاتصال، ثم أعد المحاولة.</p>
+        <button className="button" onClick={() => location.reload()}>
+          إعادة المحاولة
+        </button>
+      </div>
+    )
   if (!course)
     return (
       <div className="container error-page">
@@ -50,29 +73,33 @@ export default function CourseDetail() {
             <h2>عن المسار</h2>
             <p>{course.description}</p>
           </div>
-          <div className="content-block">
-            <h2>ما الذي ستتعلّمه؟</h2>
-            <div className="curriculum">
-              {course.topics.map((topic, i) => (
-                <div key={topic}>
-                  <span>{arNumber(i + 1).padStart(2, '٠')}</span>
-                  <h3>{topic}</h3>
-                  <Check size={18} />
-                </div>
-              ))}
+          {course.topics.length > 0 && (
+            <div className="content-block">
+              <h2>ما الذي ستتعلّمه؟</h2>
+              <div className="curriculum">
+                {course.topics.map((topic, i) => (
+                  <div key={topic}>
+                    <span>{arNumber(i + 1).padStart(2, '٠')}</span>
+                    <h3>{topic}</h3>
+                    <Check size={18} />
+                  </div>
+                ))}
+              </div>
             </div>
-          </div>
-          <div className="content-block">
-            <h2>ما الذي ستعمل على تطويره؟</h2>
-            <ul className="check-list">
-              {course.outcomes.map((outcome) => (
-                <li key={outcome}>
-                  <Check size={20} />
-                  {outcome}
-                </li>
-              ))}
-            </ul>
-          </div>
+          )}
+          {course.outcomes.length > 0 && (
+            <div className="content-block">
+              <h2>ما الذي ستعمل على تطويره؟</h2>
+              <ul className="check-list">
+                {course.outcomes.map((outcome) => (
+                  <li key={outcome}>
+                    <Check size={20} />
+                    {outcome}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           <div className="content-block">
             <h2>كيف تستفيد من المسار؟</h2>
             <p>
@@ -93,16 +120,47 @@ export default function CourseDetail() {
           <div className="enrol-detail">
             <CourseIcon symbol={course.symbol} size={23} />
             <span>
-              المحتوى<strong>{arNumber(course.topics.length)} محاور تدريبية</strong>
+              المحتوى
+              <strong>
+                {course.topics.length
+                  ? `${arNumber(course.topics.length)} محاور تدريبية`
+                  : 'محتوى تدريبي منظم'}
+              </strong>
             </span>
           </div>
           <div className="enrol-info">
             <Info size={20} />
-            <p>المواعيد والرسوم تُضاف عند اعتماد البرنامج. التسجيل والدفع غير متاحين حاليًا.</p>
+            <p>
+              {course.price === null
+                ? 'الرسوم تُحدد عند قبول طلبك.'
+                : `الرسوم المعلنة: ${money(course.price)}.`}{' '}
+              تختار الإدارة الدفعة المناسبة وتؤكد تفاصيل التسجيل.
+            </p>
           </div>
-          <Link to={`/contact?program=${course.id}`} className="button full-width">
-            جهّز استفسارك <ArrowLeft size={19} />
-          </Link>
+          <button
+            className="button full-width"
+            disabled={busy}
+            onClick={async () => {
+              if (!user) {
+                navigate(`/login?next=${encodeURIComponent(`/programs/${course.id}`)}`)
+                return
+              }
+              setBusy(true)
+              try {
+                const { error } = await supabase.rpc('request_enrollment', { p_course: course.id })
+                if (error) throw error
+                notify('طلب الالتحاق مسجل في حسابك. تابع حالة القبول في كورساتي.')
+                navigate('/dashboard/courses')
+              } catch (e) {
+                notify(errorMessage(e))
+              } finally {
+                setBusy(false)
+              }
+            }}
+          >
+            {busy ? 'جارٍ إرسال الطلب…' : 'طلب الالتحاق بالكورس'}
+            <ArrowLeft size={19} />
+          </button>
           <button
             className="button button-outline full-width"
             aria-pressed={saved}

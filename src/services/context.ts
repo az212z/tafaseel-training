@@ -3,6 +3,8 @@ import type { LearningState } from './learning'
 
 export const LearningContext = createContext<{
   state: LearningState
+  syncState: 'loading' | 'saved' | 'saving' | 'error'
+  retrySync: () => void
   update: (fn: (state: LearningState) => LearningState) => void
   notify: (message: string) => void
 } | null>(null)

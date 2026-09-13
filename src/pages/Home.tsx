@@ -12,7 +12,8 @@ import {
   TrendUp,
 } from '@phosphor-icons/react'
 import { BottomCTA, CourseCard, FAQ } from '../components/Shared'
-import { courses, questions } from '../data/content'
+import { questions } from '../data/content'
+import { useCatalog } from '../services/catalog'
 
 function HeroQuestion() {
   const [answer, setAnswer] = useState<number | null>(null)
@@ -88,6 +89,7 @@ function HeroQuestion() {
 }
 
 export default function Home() {
+  const { courses, loading, error } = useCatalog()
   return (
     <>
       <section className="hero container">
@@ -154,11 +156,29 @@ export default function Home() {
             جميع البرامج <ArrowLeft size={20} />
           </Link>
         </div>
-        <div className="home-programs">
-          {courses.slice(0, 3).map((course) => (
-            <CourseCard key={course.id} course={course} />
-          ))}
-        </div>
+        {loading ? (
+          <div className="portal-loading" role="status">
+            جارٍ تحميل البرامج…
+          </div>
+        ) : error ? (
+          <div className="empty-state">
+            <h3>تعذّر تحميل البرامج</h3>
+            <p>تحقق من الاتصال، ثم أعد المحاولة.</p>
+            <button className="button button-outline" onClick={() => location.reload()}>
+              إعادة المحاولة
+            </button>
+          </div>
+        ) : courses.length ? (
+          <div className="home-programs">
+            {courses.slice(0, 3).map((course) => (
+              <CourseCard key={course.id} course={course} />
+            ))}
+          </div>
+        ) : (
+          <div className="empty-state">
+            <h3>تُعلن البرامج الجديدة هنا قريبًا.</h3>
+          </div>
+        )}
       </section>
 
       <section className="method-section">
@@ -227,9 +247,9 @@ export default function Home() {
                 <br />
                 وما خطوتك القادمة.
               </h3>
-              <p>نتائج تدريباتك، مساراتك المحفوظة، وخطة أسبوعية تتابعها بنفسك.</p>
+              <p>كورساتك، تقدمك في الدروس، ودفعاتك. كل تفاصيل رحلتك في حساب واحد.</p>
               <span className="text-link">
-                استكشف مساحة المتدرب <ArrowLeft size={20} />
+                الدخول إلى حسابك <ArrowLeft size={20} />
               </span>
             </div>
             <div className="tool-feature-symbol">

@@ -1,10 +1,11 @@
 import { useState } from 'react'
 import { MagnifyingGlass, SlidersHorizontal } from '@phosphor-icons/react'
 import { CourseCard, PageHeading } from '../components/Shared'
-import { courses } from '../data/content'
+import { useCatalog } from '../services/catalog'
 import { arNumber } from '../services/learning'
 
 export default function Programs() {
+  const { courses, loading, error } = useCatalog()
   const [category, setCategory] = useState('الكل')
   const [search, setSearch] = useState('')
   const filtered = courses.filter(
@@ -52,7 +53,16 @@ export default function Programs() {
           {arNumber(filtered.length)} مسارات تدريبية
         </div>
         <h2 className="sr-only">المسارات المتاحة</h2>
-        {filtered.length ? (
+        {loading ? (
+          <div className="portal-loading" role="status">
+            جارٍ تحميل البرامج…
+          </div>
+        ) : error ? (
+          <div className="empty-state">
+            <h2>تعذّر تحميل البرامج</h2>
+            <p>تحقق من الاتصال، ثم حدّث الصفحة.</p>
+          </div>
+        ) : filtered.length ? (
           <div className="programs-grid">
             {filtered.map((course) => (
               <CourseCard key={course.id} course={course} />
@@ -75,8 +85,7 @@ export default function Programs() {
           </div>
         )}
         <div className="editorial-note">
-          المسارات المعروضة تصور للمحتوى التدريبي. تُعلن المواعيد والرسوم بعد اعتماد البرامج من
-          المركز.
+          يمكنك طلب الالتحاق من حسابك. تعتمد الإدارة الدفعات والمواعيد والرسوم لكل تسجيل.
         </div>
       </section>
     </>

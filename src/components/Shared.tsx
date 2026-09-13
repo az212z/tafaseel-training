@@ -18,6 +18,7 @@ import {
 } from '@phosphor-icons/react'
 import { faqs } from '../data/content'
 import type { Course } from '../data/content'
+import { useAuth } from '../auth/context'
 import { useLearning } from '../services/context'
 
 export function Brand({ compact = false }: { compact?: boolean }) {
@@ -38,26 +39,10 @@ export function Brand({ compact = false }: { compact?: boolean }) {
 }
 
 export function Header() {
+  const { user, isAdmin } = useAuth()
+  const accountPath = user ? (isAdmin ? '/admin' : '/dashboard') : '/login'
+  const accountLabel = user ? (isAdmin ? 'لوحة الإدارة' : 'حسابي') : 'تسجيل الدخول'
   const [menu, setMenu] = useState(false)
-  const [dark, setDark] = useState(() => {
-    try {
-      const saved = localStorage.getItem('tafaseel-theme')
-      return saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches
-    } catch {
-      return false
-    }
-  })
-  useEffect(() => {
-    document.documentElement.dataset.theme = dark ? 'dark' : 'light'
-    document
-      .querySelector('meta[name="theme-color"]')
-      ?.setAttribute('content', dark ? '#162a31' : '#f8faf9')
-    try {
-      localStorage.setItem('tafaseel-theme', dark ? 'dark' : 'light')
-    } catch {
-      /* Appearance still works without storage. */
-    }
-  }, [dark])
   const navigation = [
     ['/', 'الرئيسية'],
     ['/programs', 'برامجنا'],
@@ -85,20 +70,14 @@ export function Header() {
               {label}
             </NavLink>
           ))}
-          <Link className="mobile-account" to="/dashboard" onClick={() => setMenu(false)}>
-            مساحة المتدرب <ArrowUpLeft size={18} />
+          <Link className="mobile-account" to={accountPath} onClick={() => setMenu(false)}>
+            {accountLabel} <ArrowUpLeft size={18} />
           </Link>
         </nav>
         <div className="header-actions">
-          <button
-            className="icon-button theme-toggle"
-            aria-label={dark ? 'تفعيل المظهر الفاتح' : 'تفعيل المظهر الداكن'}
-            onClick={() => setDark((v) => !v)}
-          >
-            {dark ? <Sun size={20} /> : <Moon size={20} />}
-          </button>
-          <Link className="button button-small header-account" to="/dashboard">
-            مساحة المتدرب <ArrowUpLeft size={17} />
+          <ThemeToggle />
+          <Link className="button button-small header-account" to={accountPath}>
+            {accountLabel} <ArrowUpLeft size={17} />
           </Link>
           <button
             className="icon-button menu-toggle"
@@ -137,7 +116,7 @@ export function Footer() {
           <h3>رحلتك في التعلّم</h3>
           <Link to="/practice">التدريب التفاعلي</Link>
           <Link to="/library">مكتبة التعلّم</Link>
-          <Link to="/dashboard">مساحة المتدرب</Link>
+          <Link to="/dashboard">حساب المتدرب</Link>
         </div>
         <div className="footer-message">
           <span className="eyebrow">خطوتك القادمة</span>
@@ -265,12 +244,29 @@ export function PageHeading({
 }
 
 export function LocalNotice() {
+  const { user } = useAuth()
+  const { syncState, retrySync } = useLearning()
   return (
     <div className="local-notice">
       <span className="notice-icon">
         <Check size={16} />
       </span>
-      <span>مساحة تجريبية شخصية. يُحفظ تقدمك في هذا المتصفح على جهازك.</span>
+      <span>
+        {user
+          ? syncState === 'error'
+            ? 'تعذّر مزامنة تقدمك. تحقق من الاتصال وأعد المحاولة.'
+            : syncState === 'saving'
+              ? 'جارٍ حفظ تقدمك في حسابك…'
+              : syncState === 'loading'
+                ? 'جارٍ تحميل تقدمك من حسابك…'
+                : 'تقدمك مرتبط بحسابك ويُحفظ بين أجهزتك.'
+          : 'تُحفظ محاولتك على هذا الجهاز. سجّل الدخول لحفظ تقدمك في حسابك.'}
+      </span>
+      {user && syncState === 'error' && (
+        <button className="text-link" onClick={retrySync}>
+          إعادة المحاولة
+        </button>
+      )}
     </div>
   )
 }
@@ -295,5 +291,37 @@ export function BottomCTA() {
         </div>
       </div>
     </section>
+  )
+}
+
+export function ThemeToggle() {
+  const [dark, setDark] = useState(() => {
+    try {
+      const saved = localStorage.getItem('tafaseel-theme')
+      return saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches
+    } catch {
+      return false
+    }
+  })
+  useEffect(() => {
+    document.documentElement.dataset.theme = dark ? 'dark' : 'light'
+    document
+      .querySelector('meta[name="theme-color"]')
+      ?.setAttribute('content', dark ? '#162a31' : '#f8faf9')
+    try {
+      localStorage.setItem('tafaseel-theme', dark ? 'dark' : 'light')
+    } catch {
+      /* Appearance still works without storage. */
+    }
+  }, [dark])
+
+  return (
+    <button
+      className="icon-button theme-toggle"
+      aria-label={dark ? 'تفعيل المظهر الفاتح' : 'تفعيل المظهر الداكن'}
+      onClick={() => setDark((v) => !v)}
+    >
+      {dark ? <Sun size={20} /> : <Moon size={20} />}
+    </button>
   )
 }

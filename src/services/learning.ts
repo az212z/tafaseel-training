@@ -26,7 +26,7 @@ export type LearningState = {
   session: Session | null
 }
 const KEY = 'tafaseel-learning-v1'
-const empty = (): LearningState => ({
+export const emptyLearning = (): LearningState => ({
   version: 1,
   attempts: [],
   savedCourses: [],
@@ -42,11 +42,10 @@ const validIds = (v: unknown): v is string[] =>
 const validAnswers = (v: unknown): v is number[] =>
   Array.isArray(v) && v.every((a) => Number.isInteger(a) && a >= -1 && a <= 3)
 
-export function readLearning(): LearningState {
+export function validateLearning(value: unknown): LearningState {
   try {
-    const value: unknown = JSON.parse(localStorage.getItem(KEY) ?? 'null')
-    if (!isRecord(value) || value.version !== 1) return empty()
-    const state = empty()
+    if (!isRecord(value) || value.version !== 1) return emptyLearning()
+    const state = emptyLearning()
     if (Array.isArray(value.savedCourses))
       state.savedCourses = value.savedCourses.filter((id): id is string => typeof id === 'string')
     if (Array.isArray(value.plan))
@@ -92,11 +91,19 @@ export function readLearning(): LearningState {
       state.session = s as unknown as Session
     return state
   } catch {
-    return empty()
+    return emptyLearning()
   }
 }
 
-// This adapter is the only persistence boundary. Replace it with authenticated API calls when connecting a backend.
+export function readLearning(): LearningState {
+  try {
+    return validateLearning(JSON.parse(localStorage.getItem(KEY) ?? 'null'))
+  } catch {
+    return emptyLearning()
+  }
+}
+
+// Guest-only device persistence. Authenticated learning is stored in PostgreSQL.
 export function writeLearning(state: LearningState): boolean {
   try {
     localStorage.setItem(KEY, JSON.stringify(state))

@@ -1,7 +1,7 @@
 {
   "name": "tafaseel-training",
-  "version": "1.0.0",
-  "description": "واجهة عربية لمركز تفاصيل للتدريب",
+  "version": "2.0.0",
+  "description": "منصة تدريب عربية بحسابات متدربين ولوحة إدارة وقاعدة بيانات",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -19,9 +19,11 @@
   "dependencies": {
     "@fontsource/ibm-plex-sans-arabic": "^5.3.0",
     "@phosphor-icons/react": "^2.1.10",
+    "@supabase/supabase-js": "^2.116.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
-    "react-router-dom": "^7.18.3"
+    "react-router-dom": "^7.18.3",
+    "zod": "^4.6.4"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

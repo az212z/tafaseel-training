@@ -3,15 +3,20 @@ import type { ReactNode } from 'react'
 import { Link, Route, Routes, useLocation } from 'react-router-dom'
 import { ArrowLeft, CheckCircle, X } from '@phosphor-icons/react'
 import { Header, Footer } from './components/Shared'
-import { LearningContext } from './services/context'
-import { readLearning, writeLearning } from './services/learning'
-import type { LearningState } from './services/learning'
+import LearningProvider from './services/LearningProvider'
+import AuthProvider from './auth/AuthProvider'
+import RequireAuth from './auth/RequireAuth'
+import { useAuth } from './auth/context'
 import Home from './pages/Home'
 
 const Programs = lazy(() => import('./pages/Programs'))
 const CourseDetail = lazy(() => import('./pages/CourseDetail'))
 const Practice = lazy(() => import('./pages/Practice'))
 const Dashboard = lazy(() => import('./pages/Dashboard'))
+const Admin = lazy(() => import('./pages/Admin'))
+const Auth = lazy(() => import('./pages/Auth'))
+const AccountSecurity = lazy(() => import('./pages/AccountSecurity'))
+const Learn = lazy(() => import('./pages/Learn'))
 const Library = lazy(() => import('./pages/Library'))
 const About = lazy(() => import('./pages/About'))
 const Contact = lazy(() => import('./pages/Contact'))
@@ -26,7 +31,7 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boole
     return this.state.hasError ? (
       <div className="error-page container">
         <h1>تعذّر عرض الصفحة</h1>
-        <p>أعد تحميل الموقع للمحاولة مرة أخرى. بياناتك المحفوظة تبقى على جهازك.</p>
+        <p>أعد تحميل الموقع للمحاولة مرة أخرى. يبقى تقدمك المحفوظ متاحًا في حسابك.</p>
         <button className="button" onClick={() => window.location.reload()}>
           إعادة التحميل
         </button>
@@ -44,13 +49,16 @@ function RouteEffects() {
       '/': 'استعدادك يبدأ بفهمك',
       '/programs': 'البرامج التدريبية',
       '/practice': 'التدريب التفاعلي',
-      '/dashboard': 'مساحة المتدرب',
+      '/dashboard': 'حساب المتدرب',
+      '/login': 'تسجيل الدخول',
+      '/register': 'إنشاء حساب',
+      '/admin': 'لوحة الإدارة',
       '/library': 'مكتبة التعلّم',
       '/about': 'عن المركز',
       '/contact': 'تواصل معنا',
       '/privacy': 'الخصوصية واستخدام الموقع',
     }
-    document.title = `${names[pathname] || (pathname.startsWith('/programs/') ? 'تفاصيل المسار' : 'مكتبة التعلّم')} | مركز تفاصيل للتدريب`
+    document.title = `${names[pathname] || (pathname.startsWith('/admin/') ? 'لوحة الإدارة' : pathname.startsWith('/dashboard/') ? 'حساب المتدرب' : pathname.startsWith('/learn/') ? 'الدرس التدريبي' : pathname.startsWith('/programs/') ? 'تفاصيل المسار' : 'تفاصيل')} | مركز تفاصيل للتدريب`
     window.scrollTo({ top: 0, behavior: 'instant' })
     document.getElementById('main-content')?.focus({ preventScroll: true })
   }, [pathname])
@@ -58,8 +66,16 @@ function RouteEffects() {
 }
 
 export default function App() {
-  const [state, setState] = useState(readLearning)
-  const stateRef = useRef(state)
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
+  )
+}
+function AppContent() {
+  const { user } = useAuth()
+  const { pathname } = useLocation()
+  const portalRoute = /^\/(dashboard|admin|learn)(\/|$)/.test(pathname)
   const [toast, setToast] = useState('')
   const [storageError, setStorageError] = useState(false)
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -74,15 +90,9 @@ export default function App() {
     if (timer.current) clearTimeout(timer.current)
     timer.current = setTimeout(() => setToast(''), 4500)
   }
-  const update = (fn: (s: LearningState) => LearningState) => {
-    const next = fn(stateRef.current)
-    stateRef.current = next
-    setState(next)
-    setStorageError(!writeLearning(next))
-  }
   return (
     <ErrorBoundary>
-      <LearningContext.Provider value={{ state, update, notify }}>
+      <LearningProvider key={user?.id || 'guest'} notify={notify} onStorageError={setStorageError}>
         <a
           href="#main-content"
           className="skip-link"
@@ -93,7 +103,7 @@ export default function App() {
         >
           تجاوز إلى المحتوى
         </a>
-        <Header />
+        {!portalRoute && <Header />}
         <RouteEffects />
         {storageError && (
           <div className="storage-warning" role="alert">
@@ -119,7 +129,35 @@ export default function App() {
               <Route path="/programs" element={<Programs />} />
               <Route path="/programs/:id" element={<CourseDetail />} />
               <Route path="/practice" element={<Practice />} />
-              <Route path="/dashboard" element={<Dashboard />} />
+              <Route
+                path="/dashboard/*"
+                element={
+                  <RequireAuth>
+                    <Dashboard />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/admin/*"
+                element={
+                  <RequireAuth admin>
+                    <Admin />
+                  </RequireAuth>
+                }
+              />
+              <Route
+                path="/learn/:courseId/:lessonId?"
+                element={
+                  <RequireAuth>
+                    <Learn />
+                  </RequireAuth>
+                }
+              />
+              <Route path="/login" element={<Auth />} />
+              <Route path="/register" element={<Auth />} />
+              <Route path="/forgot-password" element={<Auth />} />
+              <Route path="/auth/reset" element={<Auth />} />
+              <Route path="/account/security" element={<AccountSecurity />} />
               <Route path="/library" element={<Library />} />
               <Route path="/library/:id" element={<Library />} />
               <Route path="/about" element={<About />} />
@@ -141,7 +179,7 @@ export default function App() {
             </Routes>
           </Suspense>
         </main>
-        <Footer />
+        {!portalRoute && <Footer />}
         <div className={`toast ${toast ? 'visible' : ''}`} role="status" aria-live="polite">
           {toast && (
             <>
@@ -157,7 +195,7 @@ export default function App() {
             </>
           )}
         </div>
-      </LearningContext.Provider>
+      </LearningProvider>
     </ErrorBoundary>
   )
 }
