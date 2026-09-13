@@ -6,7 +6,7 @@
 
 رابط الموقع: https://az212z.github.io/tafaseel-training/
 
-يُنشر الموقع من فرع `main` ومجلد `docs/`. بعد تعديل الواجهة، شغّل الأمر التالي ثم احفظ التغييرات وارفعها إلى GitHub:
+يُنشر الموقع من فرع `main` ومجلد `docs/` عبر GitHub Actions. بعد تعديل الواجهة، شغّل الأمر التالي ثم احفظ التغييرات وارفعها إلى GitHub:
 
 ```bash
 npm run deploy:build
