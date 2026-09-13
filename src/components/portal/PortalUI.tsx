@@ -93,7 +93,7 @@ export function PortalShell({
             onClick={async () => {
               try {
                 await auth.signOut()
-                navigate('/login')
+                navigate(admin ? '/admin/login' : '/')
               } catch (e) {
                 notify(errorMessage(e))
               }

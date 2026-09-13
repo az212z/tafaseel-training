@@ -17,7 +17,12 @@ export default function RequireAuth({
       </div>
     )
   if (!auth.user)
-    return <Navigate to={`/login?next=${encodeURIComponent(location.pathname)}`} replace />
+    return (
+      <Navigate
+        to={admin ? `/admin/login?next=${encodeURIComponent(location.pathname)}` : '/booking'}
+        replace
+      />
+    )
   if (auth.error)
     return (
       <div className="container error-page">

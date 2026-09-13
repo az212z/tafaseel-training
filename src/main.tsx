@@ -9,6 +9,7 @@ import App from './App'
 import './styles.css'
 import './portal.css'
 import './catalog.css'
+import './booking.css'
 
 // Recover once when a long-lived tab references a chunk replaced by a deployment.
 window.addEventListener('vite:preloadError', (event) => {

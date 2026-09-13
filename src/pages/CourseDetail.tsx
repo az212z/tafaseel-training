@@ -10,7 +10,7 @@ import {
   CalendarBlank,
   Phone,
 } from '@phosphor-icons/react'
-import { CourseCard, WhatsAppLink } from '../components/Shared'
+import { BookingLink, CourseCard } from '../components/Shared'
 import { groupFor } from '../data/course-catalog'
 import { useCatalog } from '../services/catalog'
 import { money } from '../services/backend'
@@ -76,7 +76,7 @@ export default function CourseDetail() {
             <p className="course-tagline">{course.short}</p>
             <p>{course.description}</p>
             <div className="course-profile-actions">
-              <WhatsAppLink courseTitle={course.title}>احجز عبر واتساب</WhatsAppLink>
+              <BookingLink courseId={course.id}>احجز هذه الدورة</BookingLink>
               <button
                 className={`icon-button course-save ${saved ? 'saved' : ''}`}
                 aria-label={saved ? `إلغاء حفظ ${course.title}` : `حفظ ${course.title}`}
@@ -95,7 +95,7 @@ export default function CourseDetail() {
               </button>
             </div>
             <span className="booking-caption">
-              نؤكد معك الموعد والرسوم ومتطلبات الدورة في المحادثة.
+              أكمل النموذج، ثم أرسل طلبك عبر واتساب لتأكيد التفاصيل.
             </span>
           </div>
           <figure className="course-profile-image">
@@ -182,7 +182,7 @@ export default function CourseDetail() {
                 <dd>عبر واتساب</dd>
               </div>
             </dl>
-            <WhatsAppLink courseTitle={course.title}>ابدأ الحجز</WhatsAppLink>
+            <BookingLink courseId={course.id}>ابدأ الحجز</BookingLink>
             <a className="booking-phone" href={`tel:${contact.phone}`}>
               <Phone size={18} />
               <bdi>{contact.displayPhone}</bdi>
@@ -199,22 +199,22 @@ export default function CourseDetail() {
             <li>
               <span>١</span>
               <div>
-                <h3>تواصل باسم الدورة</h3>
-                <p>يفتح زر الحجز رسالة جاهزة باسم الدورة التي اخترتها.</p>
+                <h3>أكمل نموذج الحجز</h3>
+                <p>تظهر الدورة مختارة تلقائيًا؛ أضف اسمك ورقم جوالك.</p>
               </div>
             </li>
             <li>
               <span>٢</span>
               <div>
-                <h3>راجع التفاصيل</h3>
-                <p>ناقش المواعيد والرسوم ونمط التدريب والمتطلبات مع المركز.</p>
+                <h3>أرسل طلبك عبر واتساب</h3>
+                <p>راجع الرسالة الجاهزة ببياناتك وأرسلها إلى المركز.</p>
               </div>
             </li>
             <li>
               <span>٣</span>
               <div>
                 <h3>استلم تأكيدك</h3>
-                <p>يؤكد المركز الحجز عبر واتساب ويضيف تسجيلك إلى حسابك.</p>
+                <p>راجع المواعيد والرسوم والمتطلبات، واستلم تأكيد الحجز من المركز.</p>
               </div>
             </li>
           </ol>

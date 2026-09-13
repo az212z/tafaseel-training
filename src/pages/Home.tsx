@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
-import { ArrowLeft, ArrowUpLeft, BookOpen, CheckCircle, GraduationCap } from '@phosphor-icons/react'
-import { BottomCTA, CourseCard, CourseIcon, FAQ, WhatsAppLink } from '../components/Shared'
+import { ArrowLeft, ArrowUpLeft, BookOpen, CheckCircle } from '@phosphor-icons/react'
+import { BottomCTA, BookingLink, CourseCard, CourseIcon, FAQ } from '../components/Shared'
 import { courseGroups } from '../data/course-catalog'
 import { useCatalog } from '../services/catalog'
 export default function Home() {
@@ -34,11 +34,11 @@ export default function Home() {
             <Link className="button" to="/programs">
               استكشف الدورات <ArrowLeft size={21} />
             </Link>
-            <WhatsAppLink className="text-link">تواصل للحجز</WhatsAppLink>
+            <BookingLink className="text-link">احجز دورتك</BookingLink>
           </div>
           <div className="hero-small-note">
             <CheckCircle size={18} />
-            <span>اختيار الدورة، تفاصيلها وتأكيد حجزها عبر واتساب.</span>
+            <span>نموذج حجز واضح، وتأكيد مباشر عبر واتساب.</span>
           </div>
         </div>
         <div className="institute-hero-art">
@@ -165,30 +165,19 @@ export default function Home() {
             <li>
               <span>٢</span>
               <div>
-                <h3>ناقش التفاصيل وأكّد الحجز</h3>
-                <p>تواصل عبر واتساب لمعرفة المواعيد والرسوم ونمط التدريب.</p>
+                <h3>أكمل نموذج الحجز</h3>
+                <p>أضف اسمك وجوالك واختر الدورة لنجهّز رسالة طلبك.</p>
               </div>
             </li>
             <li>
               <span>٣</span>
               <div>
-                <h3>تابع تعلّمك من حسابك</h3>
-                <p>بعد اعتماد تسجيلك، تجد محتواك وتقدمك وسجل دفعاتك في حسابك.</p>
+                <h3>أرسل طلبك وأكّد التفاصيل</h3>
+                <p>تابع عبر واتساب لمعرفة المواعيد والرسوم واستلام تأكيد المركز.</p>
               </div>
             </li>
           </ol>
         </div>
-      </section>
-      <section className="container institute-account">
-        <GraduationCap size={36} weight="duotone" />
-        <div>
-          <span className="eyebrow">للمتدربين المسجلين</span>
-          <h2>كل ما يخص رحلتك، في مكان واحد.</h2>
-          <p>كورساتك، دروسك، تقدمك ودفعاتك، ضمن حسابك الخاص.</p>
-        </div>
-        <Link className="button button-outline" to="/login">
-          دخول المتدرب <ArrowLeft size={19} />
-        </Link>
       </section>
       <section className="section container faq-section">
         <div>

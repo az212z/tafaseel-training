@@ -1,6 +1,6 @@
 import { Component, lazy, Suspense, useEffect, useRef, useState } from 'react'
 import type { ReactNode } from 'react'
-import { Link, Route, Routes, useLocation } from 'react-router-dom'
+import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { ArrowLeft, CheckCircle, X } from '@phosphor-icons/react'
 import { Header, Footer, FloatingWhatsApp } from './components/Shared'
 import LearningProvider from './services/LearningProvider'
@@ -14,7 +14,8 @@ const CourseDetail = lazy(() => import('./pages/CourseDetail'))
 const Practice = lazy(() => import('./pages/Practice'))
 const Dashboard = lazy(() => import('./pages/Dashboard'))
 const Admin = lazy(() => import('./pages/Admin'))
-const Auth = lazy(() => import('./pages/Auth'))
+const AdminLogin = lazy(() => import('./pages/AdminLogin'))
+const Booking = lazy(() => import('./pages/Booking'))
 const AccountSecurity = lazy(() => import('./pages/AccountSecurity'))
 const Learn = lazy(() => import('./pages/Learn'))
 const Library = lazy(() => import('./pages/Library'))
@@ -31,7 +32,7 @@ class ErrorBoundary extends Component<{ children: ReactNode }, { hasError: boole
     return this.state.hasError ? (
       <div className="error-page container">
         <h1>تعذّر عرض الصفحة</h1>
-        <p>أعد تحميل الموقع للمحاولة مرة أخرى. يبقى تقدمك المحفوظ متاحًا في حسابك.</p>
+        <p>أعد تحميل الموقع للمحاولة مرة أخرى.</p>
         <button className="button" onClick={() => window.location.reload()}>
           إعادة التحميل
         </button>
@@ -50,8 +51,8 @@ function RouteEffects() {
       '/programs': 'البرامج التدريبية',
       '/practice': 'التدريب التفاعلي',
       '/dashboard': 'حساب المتدرب',
-      '/login': 'تسجيل الدخول',
-      '/register': 'إنشاء حساب',
+      '/booking': 'حجز دورة',
+      '/admin/login': 'دخول الإدارة',
       '/admin': 'لوحة الإدارة',
       '/library': 'مكتبة التعلّم',
       '/about': 'عن المركز',
@@ -92,7 +93,11 @@ function AppContent() {
   }
   return (
     <ErrorBoundary>
-      <LearningProvider key={user?.id || 'guest'} notify={notify} onStorageError={setStorageError}>
+      <LearningProvider
+        key={pathname === '/admin/login' ? 'admin-signin' : user?.id || 'guest'}
+        notify={notify}
+        onStorageError={setStorageError}
+      >
         <a
           href="#main-content"
           className="skip-link"
@@ -129,6 +134,7 @@ function AppContent() {
               <Route path="/programs" element={<Programs />} />
               <Route path="/programs/category/:groupId" element={<Programs />} />
               <Route path="/programs/:id" element={<CourseDetail />} />
+              <Route path="/booking" element={<Booking />} />
               <Route path="/practice" element={<Practice />} />
               <Route
                 path="/dashboard/*"
@@ -154,10 +160,11 @@ function AppContent() {
                   </RequireAuth>
                 }
               />
-              <Route path="/login" element={<Auth />} />
-              <Route path="/register" element={<Auth />} />
-              <Route path="/forgot-password" element={<Auth />} />
-              <Route path="/auth/reset" element={<Auth />} />
+              <Route path="/admin/login" element={<AdminLogin />} />
+              <Route path="/login" element={<Navigate to="/booking" replace />} />
+              <Route path="/register" element={<Navigate to="/booking" replace />} />
+              <Route path="/forgot-password" element={<Navigate to="/booking" replace />} />
+              <Route path="/auth/reset" element={<Navigate to="/admin/login" replace />} />
               <Route path="/account/security" element={<AccountSecurity />} />
               <Route path="/library" element={<Library />} />
               <Route path="/library/:id" element={<Library />} />
@@ -183,7 +190,7 @@ function AppContent() {
         {!portalRoute && (
           <>
             <Footer />
-            <FloatingWhatsApp />
+            {pathname !== '/booking' && <FloatingWhatsApp />}
           </>
         )}
         <div className={`toast ${toast ? 'visible' : ''}`} role="status" aria-live="polite">

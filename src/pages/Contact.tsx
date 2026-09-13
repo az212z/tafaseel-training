@@ -1,6 +1,5 @@
-import { Link } from 'react-router-dom'
-import { ArrowLeft, Phone, ChatCircleText, CheckCircle } from '@phosphor-icons/react'
-import { FAQ, PageHeading, SocialLinks, WhatsAppLink } from '../components/Shared'
+import { Phone, ChatCircleText, CheckCircle } from '@phosphor-icons/react'
+import { BookingLink, FAQ, PageHeading, SocialLinks, WhatsAppLink } from '../components/Shared'
 import { contact } from '../services/contact'
 export default function Contact() {
   return (
@@ -17,12 +16,12 @@ export default function Contact() {
               <ChatCircleText size={31} />
             </span>
             <span className="eyebrow">الحجز وتأكيد الحجز</span>
-            <h2>واتساب تفاصيل.</h2>
+            <h2>طلبك يبدأ من هنا.</h2>
             <p>
-              أرسل اسم الدورة التي تهتم بها. يوضح لك المركز المواعيد والرسوم ونمط التدريب
-              والمتطلبات، ثم يؤكد حجزك في المحادثة.
+              أكمل نموذج الحجز واختر دورتك، ثم أرسل الرسالة الجاهزة عبر واتساب. يوضح لك المركز
+              المواعيد والرسوم والمتطلبات، ثم يؤكد حجزك في المحادثة.
             </p>
-            <WhatsAppLink>ابدأ المحادثة</WhatsAppLink>
+            <BookingLink>افتح نموذج الحجز</BookingLink>
             <div className="contact-confirm-note">
               <CheckCircle size={21} />
               <p>يُعد الحجز مؤكدًا بعد استلام تأكيد المركز عبر واتساب.</p>
@@ -43,11 +42,9 @@ export default function Contact() {
               <SocialLinks />
             </div>
             <div>
-              <h2>للمتدربين المسجلين</h2>
-              <p>تابع محتواك ودفعاتك أو أرسل استفسارًا يخص حسابك.</p>
-              <Link className="text-link" to="/dashboard/support">
-                مراسلات حسابي <ArrowLeft size={18} />
-              </Link>
+              <h2>لديك استفسار؟</h2>
+              <p>تواصل معنا لمناقشة الدورة المناسبة أو متابعة طلبك.</p>
+              <WhatsAppLink className="text-link">استفسر عبر واتساب</WhatsAppLink>
             </div>
           </aside>
         </div>

@@ -26,7 +26,7 @@ import {
 } from '@phosphor-icons/react'
 import { faqs } from '../data/content'
 import { courseGroups } from '../data/course-catalog'
-import { contact, whatsappUrl } from '../services/contact'
+import { bookingPath, contact, whatsappUrl } from '../services/contact'
 import type { Course } from '../data/content'
 import { useAuth } from '../auth/context'
 import { useLearning } from '../services/context'
@@ -49,9 +49,6 @@ export function Brand({ compact = false }: { compact?: boolean }) {
 }
 
 export function Header() {
-  const { user, isAdmin } = useAuth()
-  const accountPath = user ? (isAdmin ? '/admin' : '/dashboard') : '/login'
-  const accountLabel = user ? (isAdmin ? 'لوحة الإدارة' : 'حسابي') : 'تسجيل الدخول'
   const [menu, setMenu] = useState(false)
   const navigation = [
     ['/', 'الرئيسية'],
@@ -80,14 +77,14 @@ export function Header() {
               {label}
             </NavLink>
           ))}
-          <Link className="mobile-account" to={accountPath} onClick={() => setMenu(false)}>
-            {accountLabel} <ArrowUpLeft size={18} />
+          <Link className="mobile-account" to="/booking" onClick={() => setMenu(false)}>
+            احجز دورتك <ArrowUpLeft size={18} />
           </Link>
         </nav>
         <div className="header-actions">
           <ThemeToggle />
-          <Link className="button button-small header-account" to={accountPath}>
-            {accountLabel} <ArrowUpLeft size={17} />
+          <Link className="button button-small header-account" to="/booking">
+            احجز دورتك <ArrowUpLeft size={17} />
           </Link>
           <button
             className="icon-button menu-toggle"
@@ -101,6 +98,23 @@ export function Header() {
         </div>
       </div>
     </header>
+  )
+}
+
+export function BookingLink({
+  courseId,
+  children = 'احجز دورتك',
+  className = 'button',
+}: {
+  courseId?: string
+  children?: ReactNode
+  className?: string
+}) {
+  return (
+    <Link to={bookingPath(courseId)} className={className}>
+      {children}
+      <ArrowLeft size={20} />
+    </Link>
   )
 }
 
@@ -165,16 +179,10 @@ export function SocialLinks() {
 }
 export function FloatingWhatsApp() {
   return (
-    <a
-      className="floating-whatsapp"
-      href={whatsappUrl()}
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="الحجز والاستفسار عبر واتساب"
-    >
+    <Link className="floating-whatsapp" to="/booking" aria-label="افتح نموذج حجز دورة">
       <WhatsappLogo size={28} />
       <span>احجز دورتك</span>
-    </a>
+    </Link>
   )
 }
 export function Footer() {
@@ -202,13 +210,13 @@ export function Footer() {
           <h3>مركز تفاصيل</h3>
           <Link to="/about">عن المركز</Link>
           <Link to="/library">مكتبة التعلّم</Link>
-          <Link to="/dashboard">حساب المتدرب</Link>
+          <Link to="/booking">نموذج الحجز</Link>
           <Link to="/contact">تواصل معنا</Link>
         </div>
         <div className="footer-message">
           <span className="eyebrow">الحجز والاستفسار</span>
           <h3>نرتّب خطوتك القادمة.</h3>
-          <WhatsAppLink className="text-link">تواصل عبر واتساب</WhatsAppLink>
+          <BookingLink className="text-link">احجز دورتك</BookingLink>
           <a className="footer-phone" href={`tel:${contact.phone}`}>
             <Phone size={19} />
             <bdi>{contact.displayPhone}</bdi>
@@ -347,7 +355,7 @@ export function LocalNotice() {
               : syncState === 'loading'
                 ? 'جارٍ تحميل تقدمك من حسابك…'
                 : 'تقدمك مرتبط بحسابك ويُحفظ بين أجهزتك.'
-          : 'تُحفظ محاولتك على هذا الجهاز. سجّل الدخول لحفظ تقدمك في حسابك.'}
+          : 'تُحفظ محاولتك على هذا الجهاز لتتابع تدريبك لاحقًا.'}
       </span>
       {user && syncState === 'error' && (
         <button className="text-link" onClick={retrySync}>
@@ -371,7 +379,7 @@ export function BottomCTA() {
           </h2>
           <p>تعرّف على الدورة المناسبة ومواعيدها ورسومها قبل تأكيد الحجز.</p>
         </div>
-        <WhatsAppLink>تواصل للحجز</WhatsAppLink>
+        <BookingLink>ابدأ طلب الحجز</BookingLink>
       </div>
     </section>
   )

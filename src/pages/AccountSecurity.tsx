@@ -7,7 +7,7 @@ export default function AccountSecurity() {
   const auth = useAuth(),
     navigate = useNavigate()
   if (auth.loading) return <div className="portal-loading">جارٍ تحميل حسابك…</div>
-  if (!auth.user) return <Navigate to="/login" replace />
+  if (!auth.user) return <Navigate to="/admin/login" replace />
   return (
     <section className="container password-change-page">
       <span className="portal-icon">
