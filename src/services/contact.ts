@@ -1,7 +1,8 @@
 export const contact = {
   phone: '+966558815053',
   displayPhone: '٠٥٥٨٨١٥٠٥٣',
-  whatsappNumber: '966558815053',
+  whatsappNumber: '966544552366',
+  displayWhatsApp: '٠٥٤٤٥٥٢٣٦٦',
   instagram: '',
   snapchat: '',
 }

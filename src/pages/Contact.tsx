@@ -34,7 +34,7 @@ export default function Contact() {
               <a href={`tel:${contact.phone}`} className="contact-number">
                 <bdi>{contact.displayPhone}</bdi>
               </a>
-              <p>الرقم نفسه للاتصال وواتساب.</p>
+              <p>للاتصال بالمركز.</p>
             </div>
             <div>
               <h2>تابع تفاصيل</h2>
@@ -44,7 +44,9 @@ export default function Contact() {
             <div>
               <h2>لديك استفسار؟</h2>
               <p>تواصل معنا لمناقشة الدورة المناسبة أو متابعة طلبك.</p>
-              <WhatsAppLink className="text-link">استفسر عبر واتساب</WhatsAppLink>
+              <WhatsAppLink className="text-link">
+                واتساب <bdi>{contact.displayWhatsApp}</bdi>
+              </WhatsAppLink>
             </div>
           </aside>
         </div>

@@ -218,6 +218,9 @@ export default function Booking() {
             >
               متابعة الحجز عبر واتساب <WhatsappLogo size={24} />
             </button>
+            <p className="booking-confirmation-note">
+              واتساب المركز: <bdi>{contact.displayWhatsApp}</bdi>
+            </p>
             {preparedUrl && (
               <div className="booking-prepared" role="status">
                 <CheckCircle size={24} />

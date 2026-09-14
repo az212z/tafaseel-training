@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { z } from 'zod'
+import { contact } from './contact'
 const url = import.meta.env.VITE_SUPABASE_URL
 const key = import.meta.env.VITE_SUPABASE_ANON_KEY
 export const backendReady = Boolean(url && key)
@@ -48,7 +49,8 @@ export function errorMessage(error: unknown): string {
   if (/MATERIAL_UNAVAILABLE/.test(text))
     return 'المرفق غير متاح في حسابك. حدّث الصفحة أو راجع الإدارة.'
   if (/COHORT_FULL/.test(text)) return 'اكتمل عدد المقاعد في هذه الدفعة. اختر دفعة أخرى.'
-  if (/BOOKING_VIA_WHATSAPP/.test(text)) return 'الحجز وتأكيده عبر واتساب المركز: ٠٥٥٨٨١٥٠٥٣.'
+  if (/BOOKING_VIA_WHATSAPP/.test(text))
+    return `الحجز وتأكيده عبر واتساب المركز: ${contact.displayWhatsApp}.`
   if (/COHORT_MISMATCH/.test(text)) return 'الدفعة المحددة لا تتبع هذا الكورس.'
   if (/INVALID_PAYMENT_AMOUNT/.test(text))
     return 'المبلغ يجب أن يكون موجبًا وألا يتجاوز المتبقي، وبمنزلتين عشريتين كحد أقصى.'
